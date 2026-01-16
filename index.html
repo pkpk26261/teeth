@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>牙齒色彩分析系統</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+  <!-- JSZip for ZIP export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+  <!-- ===== 模式一：病患管理介面 ===== -->
+  <div id="patientMode" class="app patient-mode">
+    <header class="toolbar">
+      <div class="toolbar-left">
+        <span class="mode-badge">📋 病患管理</span>
+        <div class="draft-indicator hidden" id="draftIndicator">
+          <span class="draft-dot"></span>
+          <span>有未儲存的草稿</span>
+          <button id="restoreDraftBtn" class="btn sm">還原</button>
+          <button id="clearDraftBtn" class="btn ghost sm">清除</button>
+        </div>
+      </div>
+      <h1 class="toolbar-title">🦷 牙齒色彩分析系統</h1>
+      <div class="toolbar-right">
+        <button id="localStorageBtn" class="btn ghost">💾 本機儲存</button>
+        <button id="importDataBtn" class="btn ghost">📥 匯入</button>
+        <button id="exportDataBtn" class="btn ghost">📤 匯出</button>
+      </div>
+    </header>
+
+    <main class="patient-main">
+      <!-- 左側：病患列表 -->
+      <section class="patient-list-panel">
+        <div class="panel-header">
+          <h2>👥 病患列表</h2>
+          <button id="addPatientBtn" class="btn primary">➕ 新增病患</button>
+        </div>
+        <div class="search-box">
+          <input type="text" id="patientSearch" placeholder="🔍 搜尋病患姓名或病歷號...">
+        </div>
+        <div id="patientList" class="patient-list">
+          <div class="list-empty">尚無病患資料，請點擊「新增病患」</div>
+        </div>
+      </section>
+
+      <!-- 右側：病患詳情/編輯表單 -->
+      <section class="patient-detail-panel">
+        <div id="patientFormContainer" class="patient-form-container">
+          <div class="form-placeholder">
+            <div class="placeholder-icon">👈</div>
+            <p>請從左側選擇病患或新增病患</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 匯入/匯出彈窗 -->
+  <div id="importExportModal" class="modal hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modalTitle">匯入/匯出</h3>
+        <button id="closeModalBtn" class="btn ghost">✕</button>
+      </div>
+      <div id="modalContent" class="modal-content">
+        <!-- 動態內容 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 隱藏的檔案輸入 -->
+  <input type="file" id="importFileInput" accept=".json,.zip" style="display:none">
+
+  <!-- ===== 模式二：牙齒顏色建構介面 ===== -->
+  <div id="teethMode" class="app teeth-mode hidden">
+    <!-- 裁切彈窗 -->
+    <div id="cropModal" class="crop-modal hidden">
+      <div class="crop-dialog">
+        <div class="crop-header">
+          <div class="crop-title">
+            <h3>✂️ 裁切圖片</h3>
+            <p class="crop-tip">拖曳選取要保留的牙齒區域，放開滑鼠後自動套用</p>
+          </div>
+          <div class="crop-nav">
+            <button id="cropPrevBtn" class="btn ghost" title="上一張">◀ 上一張</button>
+            <span id="cropPageInfo" class="crop-page-info">1 / 1</span>
+            <button id="cropNextBtn" class="btn ghost" title="下一張">下一張 ▶</button>
+          </div>
+          <button id="cropCloseBtn" class="ghost">✕ 關閉</button>
+        </div>
+        <div class="crop-canvas-wrap">
+          <canvas id="cropCanvas"></canvas>
+          <div id="cropHint" class="crop-hint">
+            <div class="hint-icon">✂️</div>
+            <div>拖曳框選保留範圍</div>
+          </div>
+        </div>
+        <div class="crop-footer">
+          <span id="cropImageName" class="crop-image-name"></span>
+          <span id="cropStatus" class="crop-status"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 頂部工具列 -->
+    <header class="toolbar teeth-toolbar">
+      <div class="toolbar-left">
+        <button id="backToPatientBtn" class="btn ghost">◀ 返回病患列表</button>
+        <div class="current-patient-info">
+          <span id="currentPatientName">-</span>
+          <span class="sep">|</span>
+          <span id="currentPatientId">-</span>
+        </div>
+      </div>
+      <div class="toolbar-center">
+        <h1 class="toolbar-title">🦷 牙齒色彩分析</h1>
+        <div class="steps-inline">
+          <span class="step active" data-step="1">①上傳</span>
+          <span class="step-sep">→</span>
+          <span class="step" data-step="2">②選牙位</span>
+          <span class="step-sep">→</span>
+          <span class="step" data-step="3">③框選</span>
+          <span class="step-sep">→</span>
+          <span class="step" data-step="4">④儲存</span>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <button id="clearAllBtn" class="btn ghost danger">🗑️ 清除全部</button>
+      </div>
+    </header>
+
+    <!-- 主內容區 -->
+    <main class="main-content">
+      <!-- 左側面板 -->
+      <section class="left-panel">
+        <!-- 上方：上傳區 + Canvas -->
+        <div class="workspace-area">
+          <!-- 圖片上傳/列表區 -->
+          <div class="image-list-panel">
+            <label class="upload-zone">
+              <span class="upload-icon">📁</span>
+              <span class="upload-text">上傳圖片</span>
+              <input type="file" id="fileInput" accept="image/*" multiple>
+            </label>
+            <div class="image-list-header">
+              <span>📷 圖片列表</span>
+              <span id="imageCount" class="image-count">0</span>
+            </div>
+            <div id="imageList" class="image-list">
+              <div class="image-list-empty">尚無圖片</div>
+            </div>
+          </div>
+
+          <!-- Canvas 區域 -->
+          <div class="canvas-area">
+            <div class="canvas-wrap">
+              <canvas id="imageCanvas"></canvas>
+              <div id="canvasHint" class="canvas-hint">
+                <div class="hint-icon">🖼️</div>
+                <div>點擊左側「上傳圖片」開始</div>
+              </div>
+              <div id="canvasColorTip" class="canvas-color-tip"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 下方：操作列 + 牙位選擇 -->
+        <div class="bottom-area">
+          <!-- 操作列 -->
+          <div class="action-bar">
+            <div id="canvasStatus" class="canvas-status"></div>
+            <div class="action-btns">
+              <div class="roi-mode-selector">
+                <span>圈選模式</span>
+                <div class="mode-btns">
+                  <button id="rectModeBtn" class="mode-btn active" title="矩形框選">
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                      <rect x="2" y="2" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                  <button id="polyModeBtn" class="mode-btn" title="多邊形圈選（點擊定點，雙擊完成）">
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                      <polygon points="9,2 16,6 14,14 4,14 2,6" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="grid-ctrl">
+                <span>取樣</span>
+                <input type="range" id="gridRange" min="2" max="32" value="8">
+                <span class="grid-val"><span id="gridNumber">8</span>×<span id="gridNumber2">8</span></span>
+              </div>
+              <button id="saveBtn" class="btn primary">💾 儲存</button>
+              <button id="clearSelectionBtn" class="btn ghost">✕ 清除選取</button>
+            </div>
+          </div>
+
+          <!-- 牙位選擇 -->
+          <div class="tooth-box">
+            <div class="tooth-box-header">
+              <span class="tooth-title">🦷 牙位選擇</span>
+              <span id="selectedToothHint" class="tooth-hint">點選牙位</span>
+              <span class="legend">
+                <span class="lg"><span class="dot gray"></span>未建檔</span>
+                <span class="lg"><span class="dot green"></span>本圖</span>
+                <span class="lg"><span class="dot blue"></span>他圖 ↗</span>
+              </span>
+            </div>
+            <div class="tooth-grid">
+              <div class="jaw">
+                <span class="jaw-label">上顎</span>
+                <div id="upperRow" class="tooth-row"></div>
+              </div>
+              <div class="jaw-sep"></div>
+              <div class="jaw">
+                <span class="jaw-label">下顎</span>
+                <div id="lowerRow" class="tooth-row"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右側：資訊面板 -->
+      <aside class="right-panel">
+        <!-- 顏色預覽 -->
+        <div class="preview-box">
+          <div class="box-header">🎨 顏色預覽</div>
+          <div id="colorPreview" class="color-preview">
+            <span class="preview-empty">選擇已建檔牙位</span>
+          </div>
+        </div>
+        <!-- 詳情 -->
+        <div class="detail-box">
+          <div class="box-header">
+            <span>📋 詳情</span>
+            <button id="deleteBtn" class="btn ghost danger sm">🗑️</button>
+          </div>
+          <div id="detailBody" class="detail-body">
+            <span class="detail-empty">尚未選擇</span>
+          </div>
+        </div>
+        <!-- VITA 色卡對照表 -->
+        <div class="shade-guide-box">
+          <div class="box-header">
+            <span>🦷 VITA 色卡對照</span>
+            <button id="toggleShadeGuide" class="btn ghost sm">展開</button>
+          </div>
+          <div id="shadeGuidePanel" class="shade-guide-panel collapsed">
+            <div class="shade-guide-grid"></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 病患表單模板 -->
+  <template id="patientFormTemplate">
+    <div class="patient-form">
+      <div class="form-header">
+        <h3 id="formTitle">新增病患</h3>
+        <button type="button" class="btn ghost cancel-btn">✕ 取消</button>
+      </div>
+      <form id="patientForm">
+        <input type="hidden" id="patientIdField" value="">
+        
+        <fieldset class="form-section">
+          <legend>👤 病患資料</legend>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="patientNo">病歷號碼 <span class="required">*</span></label>
+              <input type="text" id="patientNo" required placeholder="例：P2024001">
+            </div>
+            <div class="form-group">
+              <label for="patientName">病患姓名 <span class="required">*</span></label>
+              <input type="text" id="patientName" required placeholder="請輸入姓名">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="patientGender">性別</label>
+              <select id="patientGender">
+                <option value="">請選擇</option>
+                <option value="male">男</option>
+                <option value="female">女</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="patientBirth">出生日期</label>
+              <input type="date" id="patientBirth">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="patientPhone">聯絡電話</label>
+              <input type="tel" id="patientPhone" placeholder="例：0912-345-678">
+            </div>
+            <div class="form-group">
+              <label for="patientEmail">電子郵件</label>
+              <input type="email" id="patientEmail" placeholder="example@mail.com">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="patientAddress">地址</label>
+            <input type="text" id="patientAddress" placeholder="請輸入地址">
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>🩺 主治醫師</legend>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="doctorName">醫師姓名 <span class="required">*</span></label>
+              <input type="text" id="doctorName" required placeholder="請輸入醫師姓名">
+            </div>
+            <div class="form-group">
+              <label for="doctorDept">科別</label>
+              <input type="text" id="doctorDept" placeholder="例：牙科、矯正科">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="doctorNote">備註</label>
+            <textarea id="doctorNote" rows="2" placeholder="其他備註事項"></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>📝 治療資訊</legend>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="treatmentType">治療類型</label>
+              <select id="treatmentType">
+                <option value="">請選擇</option>
+                <option value="crown">牙冠製作</option>
+                <option value="veneer">貼片</option>
+                <option value="denture">假牙</option>
+                <option value="implant">植牙</option>
+                <option value="whitening">美白</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="treatmentDate">建檔日期</label>
+              <input type="date" id="treatmentDate">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="treatmentNote">治療備註</label>
+            <textarea id="treatmentNote" rows="3" placeholder="記錄治療相關資訊"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="button" class="btn ghost cancel-btn">取消</button>
+          <button type="submit" class="btn primary">💾 儲存資料</button>
+          <button type="button" id="editTeethBtn" class="btn success edit-teeth-btn hidden">🦷 編輯牙齒顏色</button>
+        </div>
+      </form>
+    </div>
+  </template>
+
+  <script src="main.js"></script>
+</body>
+</html>
