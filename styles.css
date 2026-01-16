@@ -197,6 +197,7 @@ html, body {
   display: flex;
   gap: 8px;
   min-height: 0;
+  overflow: hidden;
 }
 
 /* 圖片列表面板 */
@@ -261,8 +262,9 @@ html, body {
 }
 
 .image-list {
-  flex: 1;
+  flex: 1 1 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -286,6 +288,7 @@ html, body {
   transition: all 0.15s;
   position: relative;
   background: var(--canvas-bg);
+  flex-shrink: 0;
 }
 
 .image-thumb:hover {
@@ -697,6 +700,7 @@ html, body {
   gap: 1px;
   margin-top: 2px;
   justify-content: center;
+  height: 10px;
 }
 
 /* 有資料時直接顯示 LCh 方塊 */
@@ -726,6 +730,10 @@ html, body {
   color: #9ca3af;
   margin-top: 2px;
   line-height: 1;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 有資料時隱藏「未建檔」文字 */
