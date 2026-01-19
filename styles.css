@@ -2372,34 +2372,31 @@ button.danger {
   background: #10b981;
 }
 
-/* 重新開始教學按鈕 */
+/* 重新開始教學按鈕（已移至工具列，隱藏此浮動按鈕） */
 .restart-tutorial-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-  transition: all 0.3s;
-  z-index: 9998;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: none !important;
 }
 
-.restart-tutorial-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+/* 工具列操作說明按鈕 */
+.help-btn {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: 600;
+  padding: 8px 14px !important;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  transition: all 0.3s ease;
 }
 
-.restart-tutorial-btn:active {
-  transform: scale(0.95);
+.help-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #1d4ed8, #1e40af) !important;
+}
+
+.help-btn:active {
+  transform: translateY(0);
 }
 
 /* 歡迎彈窗 */

@@ -4429,6 +4429,8 @@ const tutorialNextBtn = document.getElementById('tutorialNextBtn');
 const tutorialSkipBtn = document.getElementById('tutorialSkipBtn');
 const tutorialDots = document.getElementById('tutorialDots');
 const restartTutorialBtn = document.getElementById('restartTutorialBtn');
+const helpBtnPatient = document.getElementById('helpBtnPatient');
+const helpBtnTeeth = document.getElementById('helpBtnTeeth');
 const welcomeModal = document.getElementById('welcomeModal');
 const startTutorialBtn = document.getElementById('startTutorialBtn');
 const skipWelcomeBtn = document.getElementById('skipWelcomeBtn');
@@ -4440,6 +4442,8 @@ function initTutorial() {
   if (tutorialNextBtn) tutorialNextBtn.addEventListener('click', nextTutorialStep);
   if (tutorialSkipBtn) tutorialSkipBtn.addEventListener('click', endTutorial);
   if (restartTutorialBtn) restartTutorialBtn.addEventListener('click', restartTutorial);
+  if (helpBtnPatient) helpBtnPatient.addEventListener('click', restartTutorial);
+  if (helpBtnTeeth) helpBtnTeeth.addEventListener('click', restartTutorial);
   if (startTutorialBtn) startTutorialBtn.addEventListener('click', startTutorialFromWelcome);
   if (skipWelcomeBtn) skipWelcomeBtn.addEventListener('click', skipWelcome);
   

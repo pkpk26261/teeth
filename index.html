@@ -15,6 +15,7 @@
     <header class="toolbar">
       <div class="toolbar-left">
         <span class="mode-badge">📋 病患管理</span>
+        <button id="helpBtnPatient" class="btn ghost help-btn" title="操作說明">❓ 操作說明</button>
         <div class="draft-indicator hidden" id="draftIndicator">
           <span class="draft-dot"></span>
           <span>有未儲存的草稿</span>
@@ -127,6 +128,7 @@
         </div>
       </div>
       <div class="toolbar-right">
+        <button id="helpBtnTeeth" class="btn ghost help-btn" title="操作說明">❓ 操作說明</button>
         <button id="clearAllBtn" class="btn ghost danger">🗑️ 清除全部</button>
       </div>
     </header>
@@ -384,8 +386,8 @@
     </div>
   </div>
 
-  <!-- 教學重新開始按鈕（固定在畫面角落） -->
-  <button id="restartTutorialBtn" class="restart-tutorial-btn" title="重新觀看教學">
+  <!-- 教學重新開始按鈕（已移至工具列） -->
+  <button id="restartTutorialBtn" class="restart-tutorial-btn hidden" title="重新觀看教學">
     <span>❓</span>
   </button>
 
