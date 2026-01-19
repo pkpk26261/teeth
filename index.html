@@ -362,6 +362,73 @@
     </div>
   </template>
 
+  <!-- ===== 教學引導模式 ===== -->
+  <div id="tutorialOverlay" class="tutorial-overlay hidden">
+    <div class="tutorial-backdrop"></div>
+    <div id="tutorialHighlight" class="tutorial-highlight"></div>
+    <div id="tutorialTooltip" class="tutorial-tooltip">
+      <div class="tutorial-header">
+        <span class="tutorial-step-badge">步驟 <span id="tutorialStepNum">1</span>/<span id="tutorialTotalSteps">5</span></span>
+        <button id="tutorialSkipBtn" class="tutorial-skip">跳過教學</button>
+      </div>
+      <div class="tutorial-content">
+        <div class="tutorial-icon" id="tutorialIcon">📋</div>
+        <h3 id="tutorialTitle">歡迎使用</h3>
+        <p id="tutorialDesc">這是教學說明</p>
+      </div>
+      <div class="tutorial-footer">
+        <button id="tutorialPrevBtn" class="btn ghost sm">◀ 上一步</button>
+        <div class="tutorial-dots" id="tutorialDots"></div>
+        <button id="tutorialNextBtn" class="btn primary sm">下一步 ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 教學重新開始按鈕（固定在畫面角落） -->
+  <button id="restartTutorialBtn" class="restart-tutorial-btn" title="重新觀看教學">
+    <span>❓</span>
+  </button>
+
+  <!-- ===== 首次使用歡迎彈窗 ===== -->
+  <div id="welcomeModal" class="welcome-modal hidden">
+    <div class="welcome-dialog">
+      <div class="welcome-header">
+        <div class="welcome-icon">🦷</div>
+        <h2>歡迎使用牙齒色彩分析系統</h2>
+        <p>專業、精準的齒色比對工具</p>
+      </div>
+      <div class="welcome-content">
+        <div class="welcome-features">
+          <div class="welcome-feature">
+            <div class="feature-icon">📷</div>
+            <div class="feature-text">
+              <strong>拍攝比對</strong>
+              <span>上傳牙齒照片進行色彩分析</span>
+            </div>
+          </div>
+          <div class="welcome-feature">
+            <div class="feature-icon">🎨</div>
+            <div class="feature-text">
+              <strong>LCh 分析</strong>
+              <span>精確計算明度、彩度、色相值</span>
+            </div>
+          </div>
+          <div class="welcome-feature">
+            <div class="feature-icon">📋</div>
+            <div class="feature-text">
+              <strong>病歷管理</strong>
+              <span>為每位病患建立獨立色彩紀錄</span>
+            </div>
+          </div>
+        </div>
+        <div class="welcome-actions">
+          <button id="skipWelcomeBtn" class="btn ghost">稍後再說</button>
+          <button id="startTutorialBtn" class="btn primary">🚀 開始教學導覽</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="main.js"></script>
 </body>
 </html>

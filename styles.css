@@ -105,18 +105,43 @@ html, body {
   padding: 4px 8px;
   border-radius: 6px;
   color: var(--text-muted);
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .steps-inline .step.active {
   background: #dbeafe;
   color: var(--primary);
   font-weight: 600;
+  animation: stepPulse 2s ease-in-out infinite;
 }
 
 .steps-inline .step.done {
   background: #d1fae5;
   color: var(--success);
+  animation: stepComplete 0.5s ease-out;
+}
+
+@keyframes stepPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes stepComplete {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .step-sep {
@@ -2183,4 +2208,330 @@ button.danger {
   .patient-list-panel {
     max-height: 300px;
   }
+}
+
+/* ===== 教學引導模式樣式 ===== */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.tutorial-overlay.hidden {
+  display: none;
+}
+
+.tutorial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.tutorial-highlight {
+  position: absolute;
+  border-radius: 8px;
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.8),
+    0 0 0 9999px rgba(0, 0, 0, 0.6);
+  background: transparent;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tutorial-highlight::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 12px;
+  border: 2px dashed rgba(59, 130, 246, 0.6);
+  animation: tutorialPulse 2s ease-in-out infinite;
+}
+
+@keyframes tutorialPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
+}
+
+.tutorial-tooltip {
+  position: absolute;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 360px;
+  max-width: 90vw;
+  pointer-events: auto;
+  z-index: 2;
+  animation: tutorialSlideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes tutorialSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tutorial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+.tutorial-step-badge {
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.tutorial-skip {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.tutorial-skip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.tutorial-content {
+  padding: 24px;
+  text-align: center;
+}
+
+.tutorial-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.tutorial-content h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.tutorial-content p {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.tutorial-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.tutorial-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.tutorial-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+  transition: all 0.2s;
+}
+
+.tutorial-dot.active {
+  background: #2563eb;
+  transform: scale(1.2);
+}
+
+.tutorial-dot.done {
+  background: #10b981;
+}
+
+/* 重新開始教學按鈕 */
+.restart-tutorial-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+  transition: all 0.3s;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restart-tutorial-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+}
+
+.restart-tutorial-btn:active {
+  transform: scale(0.95);
+}
+
+/* 歡迎彈窗 */
+.welcome-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.welcome-modal.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.welcome-dialog {
+  background: #fff;
+  border-radius: 20px;
+  width: 440px;
+  max-width: 90vw;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+  animation: welcomeSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes welcomeSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.welcome-header {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  padding: 32px;
+  text-align: center;
+  color: #fff;
+}
+
+.welcome-header .welcome-icon {
+  font-size: 64px;
+  margin-bottom: 12px;
+}
+
+.welcome-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.welcome-header p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.welcome-content {
+  padding: 24px 32px;
+}
+
+.welcome-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.welcome-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.welcome-feature .feature-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.welcome-feature .feature-text {
+  flex: 1;
+}
+
+.welcome-feature .feature-text strong {
+  display: block;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.welcome-feature .feature-text span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.welcome-actions .btn {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.welcome-actions .btn.primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.welcome-actions .btn.ghost {
+  border: 2px solid #e5e7eb;
 }

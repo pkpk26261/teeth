@@ -1732,6 +1732,8 @@ const state = {
   polygonPoints: [], // 多邊形點陣列
   isPolygonComplete: false,
   polygonMousePos: null, // 滑鼠位置（用於預覽）
+  roiAnimationOffset: 0, // ROI 動畫偏移量
+  roiAnimationFrame: null, // ROI 動畫 frame ID
 };
 
 // 取得當前圖片
@@ -2591,6 +2593,7 @@ function redrawCanvas() {
   const img = getCurrentImage();
   if (!img) {
     canvasHint.style.display = 'flex';
+    stopRoiAnimation();
     return;
   }
   
@@ -2612,16 +2615,63 @@ function redrawCanvas() {
     if (state.roiMode === 'polygon' && state.polygonPoints.length > 0 && !state.isPolygonComplete) {
       drawPolygonInProgress();
     }
+    
+    // 如果有 ROI 需要顯示動畫，啟動動畫循環
+    const records = getCurrentRecords();
+    const hasActiveRoi = state.currentRoi || state.currentTooth || Object.keys(records).length > 0;
+    if (hasActiveRoi) {
+      startRoiAnimation();
+    } else {
+      stopRoiAnimation();
+    }
+  }
+}
+
+// ROI 動畫控制
+function startRoiAnimation() {
+  if (state.roiAnimationFrame) return; // 已在運行
+  
+  function animate() {
+    state.roiAnimationOffset = (state.roiAnimationOffset + 0.5) % 28;
+    
+    // 重繪 Canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const img = getCurrentImage();
+    if (img) {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      if (!state.isCropping) {
+        drawStoredRois();
+        if (state.currentRoi) drawLiveRoi(state.currentRoi);
+        if (state.roiMode === 'polygon' && state.polygonPoints.length > 0 && !state.isPolygonComplete) {
+          drawPolygonInProgress();
+        }
+      }
+    }
+    
+    state.roiAnimationFrame = requestAnimationFrame(animate);
+  }
+  
+  state.roiAnimationFrame = requestAnimationFrame(animate);
+}
+
+function stopRoiAnimation() {
+  if (state.roiAnimationFrame) {
+    cancelAnimationFrame(state.roiAnimationFrame);
+    state.roiAnimationFrame = null;
   }
 }
 
 function drawPolygonInProgress() {
   if (state.polygonPoints.length === 0) return;
+  
+  const dashOffset = state.roiAnimationOffset || 0;
+  
   ctx.save();
   ctx.strokeStyle = 'rgba(59,130,246,0.9)';
   ctx.fillStyle = 'rgba(59,130,246,0.15)';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6, 4]);
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([8, 6]);
+  ctx.lineDashOffset = -dashOffset;
   
   // 繪製已確定的線段和填充區域
   ctx.beginPath();
@@ -2640,11 +2690,19 @@ function drawPolygonInProgress() {
   ctx.fill();
   ctx.stroke();
   
+  // 繪製發光外框
+  ctx.strokeStyle = 'rgba(59,130,246,0.3)';
+  ctx.lineWidth = 6;
+  ctx.setLineDash([]);
+  ctx.stroke();
+  
   // 繪製預覽線（從最後一點到滑鼠位置）- 用虛線
   if (state.polygonMousePos && state.polygonPoints.length >= 1) {
     ctx.beginPath();
-    ctx.setLineDash([3, 3]);
-    ctx.strokeStyle = 'rgba(59,130,246,0.5)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineDashOffset = -dashOffset;
+    ctx.strokeStyle = 'rgba(59,130,246,0.6)';
+    ctx.lineWidth = 2;
     const lastPt = state.polygonPoints[state.polygonPoints.length - 1];
     ctx.moveTo(lastPt.x, lastPt.y);
     ctx.lineTo(state.polygonMousePos.x, state.polygonMousePos.y);
@@ -2654,9 +2712,12 @@ function drawPolygonInProgress() {
   // 繪製已定義的點
   state.polygonPoints.forEach((pt, idx) => {
     ctx.fillStyle = idx === 0 ? 'rgba(34,197,94,0.9)' : 'rgba(59,130,246,0.9)';
+    ctx.shadowColor = idx === 0 ? 'rgba(34,197,94,0.5)' : 'rgba(59,130,246,0.5)';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.arc(pt.x, pt.y, idx === 0 ? 6 : 4, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
     // 起始點加白色邊框
     if (idx === 0) {
       ctx.strokeStyle = '#fff';
@@ -2672,12 +2733,16 @@ function drawPolygonInProgress() {
 function drawLiveRoi(roi) {
   ctx.save();
   
+  // 動態虛線偏移
+  const dashOffset = state.roiAnimationOffset || 0;
+  
   if (roi.type === 'polygon' && roi.points && roi.points.length >= 3) {
     // 繪製多邊形
     ctx.strokeStyle = 'rgba(59,130,246,0.9)';
-    ctx.fillStyle = 'rgba(59,130,246,0.1)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
+    ctx.fillStyle = 'rgba(59,130,246,0.15)';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([8, 6]);
+    ctx.lineDashOffset = -dashOffset;
     
     ctx.beginPath();
     ctx.moveTo(roi.points[0].x, roi.points[0].y);
@@ -2688,19 +2753,39 @@ function drawLiveRoi(roi) {
     ctx.fill();
     ctx.stroke();
     
+    // 繪製發光外框
+    ctx.strokeStyle = 'rgba(59,130,246,0.3)';
+    ctx.lineWidth = 6;
+    ctx.setLineDash([]);
+    ctx.stroke();
+    
     // 繪製點
-    roi.points.forEach(pt => {
-      ctx.fillStyle = 'rgba(59,130,246,0.9)';
+    roi.points.forEach((pt, idx) => {
+      ctx.fillStyle = idx === 0 ? 'rgba(34,197,94,0.9)' : 'rgba(59,130,246,0.9)';
+      ctx.shadowColor = 'rgba(59,130,246,0.5)';
+      ctx.shadowBlur = 6;
       ctx.beginPath();
-      ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+      ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
     });
   } else {
     // 繪製矩形
     ctx.strokeStyle = 'rgba(59,130,246,0.9)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([8, 6]);
+    ctx.lineDashOffset = -dashOffset;
     ctx.strokeRect(roi.x, roi.y, roi.w, roi.h);
+    
+    // 繪製發光外框
+    ctx.strokeStyle = 'rgba(59,130,246,0.3)';
+    ctx.lineWidth = 6;
+    ctx.setLineDash([]);
+    ctx.strokeRect(roi.x, roi.y, roi.w, roi.h);
+    
+    // 繪製填充
+    ctx.fillStyle = 'rgba(59,130,246,0.1)';
+    ctx.fillRect(roi.x, roi.y, roi.w, roi.h);
   }
   
   ctx.restore();
@@ -2717,6 +2802,8 @@ function drawCropRect(roi) {
 
 function drawStoredRois() {
   const records = getCurrentRecords();
+  const dashOffset = state.roiAnimationOffset || 0;
+  
   Object.values(records).forEach(rec => {
     const isActive = rec.toothId === state.currentTooth;
     const r = rec.roiCanvas;
@@ -2725,7 +2812,14 @@ function drawStoredRois() {
     ctx.lineWidth = isActive ? 3 : 2;
     ctx.strokeStyle = isActive ? 'rgba(16,185,129,0.95)' : 'rgba(255,255,255,0.7)';
     if (!isActive) ctx.globalAlpha = 0.7;
-    ctx.setLineDash(isActive ? [] : [4, 3]);
+    
+    if (isActive) {
+      // 活動狀態：動態虛線
+      ctx.setLineDash([8, 6]);
+      ctx.lineDashOffset = -dashOffset;
+    } else {
+      ctx.setLineDash([4, 3]);
+    }
     
     if (r.type === 'polygon' && r.points) {
       // 繪製多邊形
@@ -2737,6 +2831,14 @@ function drawStoredRois() {
       ctx.closePath();
       ctx.stroke();
       
+      // 活動狀態：繪製發光外框
+      if (isActive) {
+        ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+        ctx.lineWidth = 6;
+        ctx.setLineDash([]);
+        ctx.stroke();
+      }
+      
       // 使用第一個點作為標籤位置
       const labelX = r.points[0].x;
       const labelY = r.points[0].y;
@@ -2744,6 +2846,15 @@ function drawStoredRois() {
     } else {
       // 繪製矩形
       ctx.strokeRect(r.x, r.y, r.w, r.h);
+      
+      // 活動狀態：繪製發光外框
+      if (isActive) {
+        ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+        ctx.lineWidth = 6;
+        ctx.setLineDash([]);
+        ctx.strokeRect(r.x, r.y, r.w, r.h);
+      }
+      
       drawRoiLabel(rec, r.x, r.y, isActive);
     }
     
@@ -4217,5 +4328,386 @@ function drawCropRectOnCropCanvas(roi) {
 function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
 }
+
+// ===== 教學引導系統 =====
+const tutorialState = {
+  isActive: false,
+  currentMode: 'patient', // 'patient' 或 'teeth'
+  currentStep: 0,
+  steps: [],
+};
+
+// 病患模式教學步驟
+const patientTutorialSteps = [
+  {
+    target: '#addPatientBtn',
+    icon: '👤',
+    title: '新增病患',
+    description: '點擊這裡可以新增一位新的病患資料。每位病患都會有獨立的資料紀錄。',
+    position: 'bottom',
+  },
+  {
+    target: '#patientSearch',
+    icon: '🔍',
+    title: '搜尋病患',
+    description: '在這裡輸入姓名或病歷號，可以快速找到您想要的病患資料。',
+    position: 'bottom',
+  },
+  {
+    target: '.patient-list',
+    icon: '📋',
+    title: '病患列表',
+    description: '所有病患資料都會顯示在這裡。點擊任一病患可以查看或編輯詳細資料。',
+    position: 'right',
+  },
+  {
+    target: '#exportDataBtn',
+    icon: '💾',
+    title: '匯出備份',
+    description: '定期備份您的資料！點擊這裡可以將所有病患資料匯出成檔案保存。',
+    position: 'bottom',
+  },
+  {
+    target: '#importDataBtn',
+    icon: '📥',
+    title: '匯入資料',
+    description: '如果您有之前匯出的備份檔案，可以從這裡匯入還原資料。',
+    position: 'bottom',
+  },
+];
+
+// 牙齒色彩模式教學步驟
+const teethTutorialSteps = [
+  {
+    target: '#backToPatientBtn',
+    icon: '⬅️',
+    title: '返回病患列表',
+    description: '點擊這裡可以返回病患管理頁面，切換或新增其他病患。',
+    position: 'bottom',
+  },
+  {
+    target: '.tooth-grid',
+    icon: '🦷',
+    title: '牙位選擇',
+    description: '點擊想要分析的牙位按鈕。已建檔的牙位會顯示 L、C、h 色彩數值。',
+    position: 'right',
+  },
+  {
+    target: '#addImageBtn',
+    icon: '📷',
+    title: '新增圖片',
+    description: '點擊這裡可以上傳牙齒照片。支援拍照或從相簿選擇圖片。',
+    position: 'bottom',
+  },
+  {
+    target: '.canvas-container',
+    icon: '🎯',
+    title: '圈選分析區域 (ROI)',
+    description: '在圖片上拖曳滑鼠，圈選您想要分析色彩的牙齒區域。',
+    position: 'left',
+  },
+  {
+    target: '.detail-panel',
+    icon: '🎨',
+    title: 'LCh 色彩分析',
+    description: '這裡會顯示選取區域的 L（明度）、C（彩度）、h（色相）分析結果。',
+    position: 'left',
+  },
+];
+
+// 取得教學元素
+const tutorialOverlay = document.getElementById('tutorialOverlay');
+const tutorialHighlight = document.getElementById('tutorialHighlight');
+const tutorialTooltip = document.getElementById('tutorialTooltip');
+const tutorialStepNum = document.getElementById('tutorialStepNum');
+const tutorialTotalSteps = document.getElementById('tutorialTotalSteps');
+const tutorialIcon = document.getElementById('tutorialIcon');
+const tutorialTitle = document.getElementById('tutorialTitle');
+const tutorialDesc = document.getElementById('tutorialDesc');
+const tutorialPrevBtn = document.getElementById('tutorialPrevBtn');
+const tutorialNextBtn = document.getElementById('tutorialNextBtn');
+const tutorialSkipBtn = document.getElementById('tutorialSkipBtn');
+const tutorialDots = document.getElementById('tutorialDots');
+const restartTutorialBtn = document.getElementById('restartTutorialBtn');
+const welcomeModal = document.getElementById('welcomeModal');
+const startTutorialBtn = document.getElementById('startTutorialBtn');
+const skipWelcomeBtn = document.getElementById('skipWelcomeBtn');
+
+// 初始化教學系統
+function initTutorial() {
+  // 綁定事件
+  if (tutorialPrevBtn) tutorialPrevBtn.addEventListener('click', prevTutorialStep);
+  if (tutorialNextBtn) tutorialNextBtn.addEventListener('click', nextTutorialStep);
+  if (tutorialSkipBtn) tutorialSkipBtn.addEventListener('click', endTutorial);
+  if (restartTutorialBtn) restartTutorialBtn.addEventListener('click', restartTutorial);
+  if (startTutorialBtn) startTutorialBtn.addEventListener('click', startTutorialFromWelcome);
+  if (skipWelcomeBtn) skipWelcomeBtn.addEventListener('click', skipWelcome);
+  
+  // 檢查是否第一次使用
+  checkFirstTimeUser();
+}
+
+// 檢查是否第一次使用
+function checkFirstTimeUser() {
+  const hasVisited = localStorage.getItem('dental_tutorial_completed');
+  if (!hasVisited && welcomeModal) {
+    // 第一次使用，顯示歡迎彈窗
+    setTimeout(() => {
+      welcomeModal.classList.remove('hidden');
+    }, 500);
+  }
+}
+
+// 從歡迎彈窗開始教學
+function startTutorialFromWelcome() {
+  if (welcomeModal) welcomeModal.classList.add('hidden');
+  startTutorial('patient');
+}
+
+// 跳過歡迎彈窗
+function skipWelcome() {
+  if (welcomeModal) welcomeModal.classList.add('hidden');
+  localStorage.setItem('dental_tutorial_completed', 'true');
+}
+
+// 開始教學
+function startTutorial(mode) {
+  tutorialState.isActive = true;
+  tutorialState.currentMode = mode;
+  tutorialState.currentStep = 0;
+  tutorialState.steps = mode === 'patient' ? patientTutorialSteps : teethTutorialSteps;
+  
+  // 建立導航點
+  createTutorialDots();
+  
+  // 顯示教學 overlay
+  if (tutorialOverlay) tutorialOverlay.classList.remove('hidden');
+  
+  // 更新總步驟數
+  if (tutorialTotalSteps) tutorialTotalSteps.textContent = tutorialState.steps.length;
+  
+  // 顯示第一步
+  showTutorialStep(0);
+}
+
+// 建立導航點
+function createTutorialDots() {
+  if (!tutorialDots) return;
+  tutorialDots.innerHTML = '';
+  tutorialState.steps.forEach((_, index) => {
+    const dot = document.createElement('div');
+    dot.className = 'tutorial-dot';
+    if (index === 0) dot.classList.add('active');
+    dot.addEventListener('click', () => goToTutorialStep(index));
+    tutorialDots.appendChild(dot);
+  });
+}
+
+// 更新導航點狀態
+function updateTutorialDots() {
+  if (!tutorialDots) return;
+  const dots = tutorialDots.querySelectorAll('.tutorial-dot');
+  dots.forEach((dot, index) => {
+    dot.classList.remove('active', 'done');
+    if (index < tutorialState.currentStep) {
+      dot.classList.add('done');
+    } else if (index === tutorialState.currentStep) {
+      dot.classList.add('active');
+    }
+  });
+}
+
+// 顯示指定步驟
+function showTutorialStep(stepIndex) {
+  const step = tutorialState.steps[stepIndex];
+  if (!step) return;
+  
+  tutorialState.currentStep = stepIndex;
+  
+  // 更新步驟指示
+  if (tutorialStepNum) tutorialStepNum.textContent = stepIndex + 1;
+  
+  // 更新內容
+  if (tutorialIcon) tutorialIcon.textContent = step.icon;
+  if (tutorialTitle) tutorialTitle.textContent = step.title;
+  if (tutorialDesc) tutorialDesc.textContent = step.description;
+  
+  // 更新按鈕狀態
+  if (tutorialPrevBtn) {
+    tutorialPrevBtn.disabled = stepIndex === 0;
+    tutorialPrevBtn.style.opacity = stepIndex === 0 ? '0.5' : '1';
+  }
+  if (tutorialNextBtn) {
+    const isLast = stepIndex === tutorialState.steps.length - 1;
+    tutorialNextBtn.textContent = isLast ? '完成 ✓' : '下一步 →';
+  }
+  
+  // 更新導航點
+  updateTutorialDots();
+  
+  // 定位高亮和提示框
+  positionTutorialElements(step);
+}
+
+// 定位教學元素
+function positionTutorialElements(step) {
+  const targetEl = document.querySelector(step.target);
+  
+  if (!targetEl || !tutorialHighlight || !tutorialTooltip) {
+    // 如果找不到目標元素，使用預設位置
+    if (tutorialHighlight) {
+      tutorialHighlight.style.display = 'none';
+    }
+    if (tutorialTooltip) {
+      tutorialTooltip.style.top = '50%';
+      tutorialTooltip.style.left = '50%';
+      tutorialTooltip.style.transform = 'translate(-50%, -50%)';
+    }
+    return;
+  }
+  
+  // 取得目標元素位置
+  const rect = targetEl.getBoundingClientRect();
+  const padding = 8;
+  
+  // 定位高亮區域
+  tutorialHighlight.style.display = 'block';
+  tutorialHighlight.style.top = `${rect.top - padding}px`;
+  tutorialHighlight.style.left = `${rect.left - padding}px`;
+  tutorialHighlight.style.width = `${rect.width + padding * 2}px`;
+  tutorialHighlight.style.height = `${rect.height + padding * 2}px`;
+  
+  // 定位提示框
+  const tooltipRect = tutorialTooltip.getBoundingClientRect();
+  const gap = 16;
+  
+  let top, left;
+  
+  switch (step.position) {
+    case 'bottom':
+      top = rect.bottom + gap;
+      left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+      break;
+    case 'top':
+      top = rect.top - tooltipRect.height - gap;
+      left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+      break;
+    case 'left':
+      top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+      left = rect.left - tooltipRect.width - gap;
+      break;
+    case 'right':
+      top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+      left = rect.right + gap;
+      break;
+    default:
+      top = rect.bottom + gap;
+      left = rect.left;
+  }
+  
+  // 確保提示框不超出視窗
+  const maxLeft = window.innerWidth - tooltipRect.width - 20;
+  const maxTop = window.innerHeight - tooltipRect.height - 20;
+  
+  left = Math.max(20, Math.min(left, maxLeft));
+  top = Math.max(20, Math.min(top, maxTop));
+  
+  tutorialTooltip.style.top = `${top}px`;
+  tutorialTooltip.style.left = `${left}px`;
+  tutorialTooltip.style.transform = 'none';
+}
+
+// 上一步
+function prevTutorialStep() {
+  if (tutorialState.currentStep > 0) {
+    showTutorialStep(tutorialState.currentStep - 1);
+  }
+}
+
+// 下一步
+function nextTutorialStep() {
+  if (tutorialState.currentStep < tutorialState.steps.length - 1) {
+    showTutorialStep(tutorialState.currentStep + 1);
+  } else {
+    // 最後一步，結束教學
+    endTutorial();
+  }
+}
+
+// 跳到指定步驟
+function goToTutorialStep(index) {
+  if (index >= 0 && index < tutorialState.steps.length) {
+    showTutorialStep(index);
+  }
+}
+
+// 結束教學
+function endTutorial() {
+  tutorialState.isActive = false;
+  if (tutorialOverlay) tutorialOverlay.classList.add('hidden');
+  
+  // 標記教學已完成
+  localStorage.setItem('dental_tutorial_completed', 'true');
+  
+  // 顯示完成提示
+  showToast('🎉 教學完成！如需再次觀看，請點擊右下角的 ❓ 按鈕');
+}
+
+// 重新開始教學
+function restartTutorial() {
+  // 判斷當前在哪個模式
+  const isPatientMode = patientMode && !patientMode.classList.contains('hidden');
+  const mode = isPatientMode ? 'patient' : 'teeth';
+  startTutorial(mode);
+}
+
+// 顯示提示訊息
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 100001;
+    animation: toastSlideUp 0.3s ease-out;
+  `;
+  toast.textContent = message;
+  
+  // 加入動畫樣式
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes toastSlideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+// 監聽模式切換，自動切換教學
+function onModeChange(newMode) {
+  if (tutorialState.isActive) {
+    // 如果教學正在進行中，切換到對應模式的教學
+    endTutorial();
+  }
+}
+
+// 初始化教學系統
+initTutorial();
 
 init();
