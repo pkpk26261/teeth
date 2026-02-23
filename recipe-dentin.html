@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idensol Chroma - 牙本質與釉質</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/recipe-dentin.css">
+  <link rel="stylesheet" href="css/ui-components.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <script src="js/auth.js" defer></script>
+  <script src="js/mobile.js" defer></script>
+</head>
+<body class="dashboard-body">
+  <!-- ===== 頂部導航列 ===== -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <a href="/" class="logo">
+        <span class="logo-icon">🦷</span>
+        <span class="logo-text">Idensol Chroma</span>
+      </a>
+      <nav class="main-nav">
+        <div class="nav-project-selector" id="navProjectSelector">
+          <button class="nav-project-btn" id="navProjectBtn">
+            <span class="nav-project-btn-icon">📂</span>
+            <span class="nav-project-btn-text">選擇專案</span>
+            <span class="nav-project-btn-arrow">▾</span>
+            <span class="nav-project-btn-clear" title="取消選擇" style="display:none">✕</span>
+          </button>
+          <div class="nav-project-dropdown">
+            <div class="nav-project-dropdown-header">
+              <div class="nav-project-search-wrap">
+                <svg class="nav-project-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="nav-project-search" type="text" placeholder="搜尋專案…" />
+              </div>
+            </div>
+            <div class="nav-project-list"></div>
+          </div>
+        </div>
+        <a href="/" class="nav-item active">我的項目</a>
+        <div class="nav-dropdown" id="navRecipeTakeout">
+          <button class="nav-item">食譜外帶 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">輕量版 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="recipe-dentin">1. 牙本質與釉質</button>
+                <button class="nav-dropdown-item" data-feature="recipe-staining">2. 染色與釉面</button>
+              </div>
+            </div>
+            <button class="nav-dropdown-item" data-feature="recipe-unified">一體化配方</button>
+            <button class="nav-dropdown-item" data-feature="ai-color-guide">AI色階指南 <span class="nav-beta-badge">Beta</span></button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navMastery">
+          <button class="nav-item">精通之道 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu nav-dropdown-menu-wide">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">模型製作 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-resin">1. 樹酯配方</button>
+                <button class="nav-dropdown-item" data-feature="mastery-3d-stain">2. 3D列印模型染色</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-fl-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-wash">2. 清洗燒製</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">微層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-ml-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-staining">2. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-internal">3. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-enamel">4. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全單塊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-mono-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-mono-staining">2. 染色工作室</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub"><span>牙齦 <span class="nav-beta-badge">Beta</span></span> <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-stain">1. 染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-ceramic">2. 陶瓷</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">金屬烤瓷冠 (PFM) <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque">1. 不透明層</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque-stain">2. 不透明層染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navStaining">
+          <button class="nav-item">染色工作室 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="stain-monolithic">整體式/色彩校正</button>
+            <button class="nav-dropdown-item" data-feature="stain-shade-model">色調模型/樹樁色調</button>
+            <button class="nav-dropdown-item" data-feature="stain-wash-fire">清洗燒製</button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navDigitalTryOn">
+          <button class="nav-item">數位試戴 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="color-detection">色彩檢測</button>
+            <button class="nav-dropdown-item" data-feature="ceramic-studio">陶瓷工作室</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切換深色/淺色模式">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="user-avatar" title="使用者選單">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 三欄主內容 ===== -->
+  <main class="rd-main">
+    <!-- ===== 左側面板：圖庫 + 數位色彩計 ===== -->
+    <aside class="rd-left-panel">
+      <!-- 圖庫 -->
+      <div class="rd-panel-section rd-gallery">
+        <div class="rd-panel-header">
+          <span class="rd-panel-title">圖庫</span>
+        </div>
+        <div class="rd-gallery-list" id="rdGalleryList">
+          <!-- 由 JS 動態渲染 -->
+        </div>
+        <button class="rd-add-image-btn" id="rdAddImageBtn" title="新增圖片">
+          <span>+</span>
+        </button>
+        <input type="file" id="rdFileInput" accept="image/*" multiple style="display:none">
+      </div>
+
+      <!-- 數位色彩計 -->
+      <div class="rd-panel-section rd-colorimeter">
+        <button class="rd-panel-header rd-collapsible" id="rdColorimeterToggle">
+          <span class="rd-panel-title">數位色彩計</span>
+          <span class="rd-collapse-arrow">▾</span>
+        </button>
+        <div class="rd-colorimeter-body" id="rdColorimeterBody">
+          <div class="rd-color-swatch" id="rdColorSwatch">
+            <span class="rd-swatch-label">將滑鼠移到圖片上</span>
+          </div>
+          <div class="rd-color-values">
+            <div class="rd-color-row rd-color-L"><span class="rd-color-key">L:</span><span class="rd-color-val" id="rdValL">0.00</span></div>
+            <div class="rd-color-row rd-color-C"><span class="rd-color-key">C:</span><span class="rd-color-val" id="rdValC">0.00</span></div>
+            <div class="rd-color-row rd-color-h"><span class="rd-color-key">h:</span><span class="rd-color-val" id="rdValH">0.00</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== 中央面板：牙本質與釉質 ===== -->
+    <section class="rd-center-panel">
+      <!-- 頂部資訊列 -->
+      <div class="rd-center-header">
+        <div class="rd-header-top">
+          <div class="rd-header-left">
+            <h2 class="rd-center-title">
+              牙本質與釉質
+              <button class="rd-info-btn" data-tooltip="輕量版配方 — 根據基牙色與目標 L*a*b* 推薦牙本質及釉質配方" title="關於此工具">ⓘ</button>
+            </h2>
+            <a href="#" class="rd-back-link" id="rdBackLink">← 返回專案</a>
+          </div>
+          <div class="rd-header-right">
+            <div class="rd-meta-row">
+              <span class="rd-project-label">專案:</span>
+              <span class="rd-project-name" id="rdProjectName">—</span>
+              <button class="rd-edit-btn" id="rdEditProjectName" title="編輯專案名稱">✎</button>
+            </div>
+            <div class="rd-meta-row">
+              <span class="rd-project-label">牙醫:</span>
+              <span class="rd-project-name" id="rdDentistName">—</span>
+              <button class="rd-edit-btn" id="rdEditDentistName" title="編輯醫生名稱">✎</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主視圖 -->
+      <div class="rd-viewer" id="rdViewer">
+        <div class="rd-viewer-canvas-wrap" id="rdCanvasWrap">
+          <canvas id="rdCanvas"></canvas>
+          <!-- 左上角工具按鈕群 -->
+          <div class="rd-overlay-tools hidden" id="rdOverlayTools">
+            <button class="rd-crop-btn" id="rdCropBtn" title="裁切圖片">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2v4H2"></path>
+                <path d="M18 22v-4h4"></path>
+                <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+              </svg>
+            </button>
+            <button class="rd-reset-btn hidden" id="rdResetView" title="還原裁切前的圖片">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+            </button>
+          </div>
+          <!-- 裁切工具列 -->
+          <div class="rd-crop-toolbar hidden" id="rdCropToolbar">
+            <div class="rd-crop-ratios">
+              <button class="rd-crop-ratio active" data-ratio="free">自訂</button>
+              <button class="rd-crop-ratio" data-ratio="1:1">1:1</button>
+              <button class="rd-crop-ratio" data-ratio="3:4">3:4</button>
+              <button class="rd-crop-ratio" data-ratio="16:9">16:9</button>
+            </div>
+            <div class="rd-crop-actions">
+              <button class="rd-crop-act" id="rdCropApply" title="套用裁切">✓</button>
+              <button class="rd-crop-act cancel" id="rdCropCancel" title="取消裁切">✕</button>
+            </div>
+          </div>
+          <!-- 裁切覆蓋層 -->
+          <canvas class="rd-crop-overlay hidden" id="rdCropOverlay"></canvas>
+          <div class="rd-viewer-hint" id="rdViewerHint">
+            <div class="rd-hint-icon">🖼️</div>
+            <div class="rd-hint-text">主視圖</div>
+            <div class="rd-hint-sub">從左側圖庫選擇圖片</div>
+          </div>
+          <div class="rd-pick-indicator hidden" id="rdPickIndicator">點擊圖片取色</div>
+        </div>
+        <div class="rd-viewer-label" id="rdViewerLabel"></div>
+      </div>
+    </section>
+
+    <!-- ===== 右側面板：配方設定 ===== -->
+    <aside class="rd-right-panel">
+      <div class="rd-right-panel-scroll" id="rdSettingsPanel">
+        <!-- 配方選項 -->
+        <div class="rd-panel-section">
+          <div class="rd-option-header">
+            <span class="rd-option-title">配方選項</span>
+            <button class="rd-info-btn" data-tooltip="單區域僅配中部區，三區域分別配頸部、中部、切端" title="選擇單區域或三區域配方模式">ⓘ</button>
+          </div>
+          <div class="rd-radio-group rd-radio-row">
+            <label class="rd-radio-item">
+              <input type="radio" name="rdZoneMode" value="single" checked>
+              <span>單區域</span>
+            </label>
+            <label class="rd-radio-item">
+              <input type="radio" name="rdZoneMode" value="triple">
+              <span>三區域</span>
+            </label>
+          </div>
+        </div>
+
+        <hr class="rd-divider">
+
+        <!-- 基牙顏色 -->
+        <div class="rd-panel-section">
+          <div class="rd-option-header">
+            <span class="rd-option-title">基牙顏色</span>
+            <button class="rd-info-btn" data-tooltip="選擇基牙的品牌色系與對應色號" title="選擇基牙顏色">ⓘ</button>
+          </div>
+
+          <!-- 品牌下拉 -->
+          <div class="rd-select-wrap rd-system-select-wrap">
+            <select class="rd-select rd-system-select" id="rdBaseBrand">
+              <option value="vita-3d" selected>VITA 3D Master</option>
+              <option value="vita-classical">VITA Classical</option>
+            </select>
+          </div>
+
+          <!-- 區域色號選擇 -->
+          <div class="rd-zone-selects" id="rdBaseZoneSelects">
+            <!-- 頸部區 (三區域時才顯示) -->
+            <div class="rd-zone-row hidden" data-zone="gingival">
+              <span class="rd-zone-label">頸部區</span>
+              <div class="rd-zone-line"></div>
+            </div>
+            <div class="rd-select-wrap hidden" data-zone="gingival">
+              <select class="rd-select rd-zone-select" id="rdBaseZoneGingival">
+                <option value="">VITA 3D Master</option>
+              </select>
+            </div>
+
+            <!-- 中部區 -->
+            <div class="rd-zone-row" data-zone="middle">
+              <span class="rd-zone-label">中部區</span>
+              <div class="rd-zone-line"></div>
+            </div>
+            <div class="rd-select-wrap" data-zone="middle">
+              <select class="rd-select rd-zone-select" id="rdBaseZoneMiddle">
+                <option value="">VITA 3D Master</option>
+              </select>
+            </div>
+
+            <!-- 切端區 (三區域時才顯示) -->
+            <div class="rd-zone-row hidden" data-zone="incisal">
+              <span class="rd-zone-label">切端區</span>
+              <div class="rd-zone-line"></div>
+            </div>
+            <div class="rd-select-wrap hidden" data-zone="incisal">
+              <select class="rd-select rd-zone-select" id="rdBaseZoneIncisal">
+                <option value="">VITA 3D Master</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <hr class="rd-divider">
+
+        <!-- 目標色 -->
+        <div class="rd-panel-section">
+          <div class="rd-option-header">
+            <span class="rd-option-title">目標色</span>
+            <button class="rd-info-btn" data-tooltip="手動輸入 L*a*b* 數值，或點擊取色器從圖片上擷取顏色" title="設定目標色 L*a*b*">ⓘ</button>
+          </div>
+
+          <div class="rd-target-zones" id="rdTargetZones">
+            <!-- 頸部區 (三區域時才顯示) -->
+            <div class="rd-target-zone-block hidden" data-zone="gingival">
+              <div class="rd-zone-row">
+                <span class="rd-zone-label">頸部區</span>
+                <div class="rd-zone-line"></div>
+              </div>
+              <div class="rd-lab-row">
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">L*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetL_gingival" value="85.42" step="0.01" min="0" max="100">
+                </div>
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">a*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetA_gingival" value="0.34" step="0.01" min="-128" max="127">
+                </div>
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">b*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetB_gingival" value="18.34" step="0.01" min="-128" max="127">
+                </div>
+              </div>
+              <button class="rd-lab-pick-btn" data-zone="gingival" title="從圖片上取色">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3l6 6-9 9H6v-6l9-9z"/><path d="M12 6l6 6"/></svg>
+                <span>從圖片取色</span>
+              </button>
+            </div>
+
+            <!-- 中部區 -->
+            <div class="rd-target-zone-block" data-zone="middle">
+              <div class="rd-zone-row">
+                <span class="rd-zone-label">中部區</span>
+                <div class="rd-zone-line"></div>
+              </div>
+              <div class="rd-lab-row">
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">L*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetL_middle" value="85.42" step="0.01" min="0" max="100">
+                </div>
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">a*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetA_middle" value="0.34" step="0.01" min="-128" max="127">
+                </div>
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">b*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetB_middle" value="18.34" step="0.01" min="-128" max="127">
+                </div>
+              </div>
+              <button class="rd-lab-pick-btn" data-zone="middle" title="從圖片上取色">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3l6 6-9 9H6v-6l9-9z"/><path d="M12 6l6 6"/></svg>
+                <span>從圖片取色</span>
+              </button>
+            </div>
+
+            <!-- 切端區 (三區域時才顯示) -->
+            <div class="rd-target-zone-block hidden" data-zone="incisal">
+              <div class="rd-zone-row">
+                <span class="rd-zone-label">切端區</span>
+                <div class="rd-zone-line"></div>
+              </div>
+              <div class="rd-lab-row">
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">L*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetL_incisal" value="85.42" step="0.01" min="0" max="100">
+                </div>
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">a*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetA_incisal" value="0.34" step="0.01" min="-128" max="127">
+                </div>
+                <div class="rd-lab-field">
+                  <label class="rd-lab-label">b*</label>
+                  <input type="number" class="rd-lab-input" id="rdTargetB_incisal" value="18.34" step="0.01" min="-128" max="127">
+                </div>
+              </div>
+              <button class="rd-lab-pick-btn" data-zone="incisal" title="從圖片上取色">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3l6 6-9 9H6v-6l9-9z"/><path d="M12 6l6 6"/></svg>
+                <span>從圖片取色</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部按鈕 -->
+      <div class="rd-panel-section rd-action-section" id="rdFooter">
+        <button class="btn primary rd-generate-btn" id="rdGenerateBtn">生成配方</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 聊天按鈕 -->
+  <button class="chat-fab" title="開啟聊天">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span>Chat</span>
+  </button>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui-components.js"></script>
+  <script src="js/recipe-dentin.js"></script>
+</body>
+</html>

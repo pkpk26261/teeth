@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idensol Chroma - AI 色階指南</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/ai-color-guide.css">
+  <link rel="stylesheet" href="css/ui-components.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <script src="js/auth.js" defer></script>
+  <script src="js/mobile.js" defer></script>
+</head>
+<body class="dashboard-body">
+  <!-- ===== 頂部導航列 ===== -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <a href="/" class="logo">
+        <span class="logo-icon">🦷</span>
+        <span class="logo-text">Idensol Chroma</span>
+      </a>
+      <nav class="main-nav">
+        <div class="nav-project-selector" id="navProjectSelector">
+          <button class="nav-project-btn" id="navProjectBtn">
+            <span class="nav-project-btn-icon">📂</span>
+            <span class="nav-project-btn-text">選擇專案</span>
+            <span class="nav-project-btn-arrow">▾</span>
+            <span class="nav-project-btn-clear" title="取消選擇" style="display:none">✕</span>
+          </button>
+          <div class="nav-project-dropdown">
+            <div class="nav-project-dropdown-header">
+              <div class="nav-project-search-wrap">
+                <svg class="nav-project-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="nav-project-search" type="text" placeholder="搜尋專案…" />
+              </div>
+            </div>
+            <div class="nav-project-list"></div>
+          </div>
+        </div>
+        <a href="/" class="nav-item active">我的項目</a>
+        <div class="nav-dropdown" id="navRecipeTakeout">
+          <button class="nav-item">食譜外帶 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">輕量版 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="recipe-dentin">1. 牙本質與釉質</button>
+                <button class="nav-dropdown-item" data-feature="recipe-staining">2. 染色與釉面</button>
+              </div>
+            </div>
+            <button class="nav-dropdown-item" data-feature="recipe-unified">一體化配方</button>
+            <button class="nav-dropdown-item" data-feature="ai-color-guide">AI色階指南 <span class="nav-beta-badge">Beta</span></button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navMastery">
+          <button class="nav-item">精通之道 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu nav-dropdown-menu-wide">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">模型製作 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-resin">1. 樹酯配方</button>
+                <button class="nav-dropdown-item" data-feature="mastery-3d-stain">2. 3D列印模型染色</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-fl-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-wash">2. 清洗燒製</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">微層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-ml-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-staining">2. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-internal">3. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-enamel">4. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全單塊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-mono-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-mono-staining">2. 染色工作室</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub"><span>牙齦 <span class="nav-beta-badge">Beta</span></span> <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-stain">1. 染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-ceramic">2. 陶瓷</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">金屬烤瓷冠 (PFM) <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque">1. 不透明層</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque-stain">2. 不透明層染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navStaining">
+          <button class="nav-item">染色工作室 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="stain-monolithic">整體式/色彩校正</button>
+            <button class="nav-dropdown-item" data-feature="stain-shade-model">色調模型/樹樁色調</button>
+            <button class="nav-dropdown-item" data-feature="stain-wash-fire">清洗燒製</button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navDigitalTryOn">
+          <button class="nav-item">數位試戴 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="color-detection">色彩檢測</button>
+            <button class="nav-dropdown-item" data-feature="ceramic-studio">陶瓷工作室</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切換深色/淺色模式">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="user-avatar" title="使用者選單">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 三欄主內容 ===== -->
+  <main class="acg-main">
+    <!-- ===== 左側面板：圖庫 + 數位色彩計 ===== -->
+    <aside class="acg-left-panel">
+      <!-- 圖庫 -->
+      <div class="acg-panel-section acg-gallery">
+        <div class="acg-panel-header">
+          <span class="acg-panel-title">圖庫</span>
+        </div>
+        <div class="acg-gallery-list" id="acgGalleryList">
+          <!-- 由 JS 動態渲染 -->
+        </div>
+        <button class="acg-add-image-btn" id="acgAddImageBtn" title="新增圖片">
+          <span>+</span>
+        </button>
+        <input type="file" id="acgFileInput" accept="image/*" multiple style="display:none">
+      </div>
+
+      <!-- 數位色彩計 -->
+      <div class="acg-panel-section acg-colorimeter">
+        <button class="acg-panel-header acg-collapsible" id="colorimeterToggle">
+          <span class="acg-panel-title">數位色彩計</span>
+          <span class="acg-collapse-arrow">▾</span>
+        </button>
+        <div class="acg-colorimeter-body" id="colorimeterBody">
+          <div class="acg-color-swatch" id="acgColorSwatch">
+            <span class="acg-swatch-label">將滑鼠移到圖片上</span>
+          </div>
+          <div class="acg-color-values">
+            <div class="acg-color-row acg-color-L"><span class="acg-color-key">L:</span><span class="acg-color-val" id="acgValL">0.00</span></div>
+            <div class="acg-color-row acg-color-C"><span class="acg-color-key">C:</span><span class="acg-color-val" id="acgValC">0.00</span></div>
+            <div class="acg-color-row acg-color-h"><span class="acg-color-key">h:</span><span class="acg-color-val" id="acgValH">0.00</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== 中央面板：色板導引 AI ===== -->
+    <section class="acg-center-panel">
+      <!-- 頂部資訊列 -->
+      <div class="acg-center-header">
+        <div class="acg-header-top">
+          <div class="acg-header-left">
+            <h2 class="acg-center-title">
+              色板導引 AI
+              <button class="acg-info-btn" data-tooltip="AI 輔助配色，根據基牙色與目標色推薦陶瓷配方" title="關於此工具">ⓘ</button>
+            </h2>
+            <a href="#" class="acg-back-link" id="acgBackLink">← 返回專案</a>
+          </div>
+          <div class="acg-header-right">
+            <div class="acg-meta-row">
+              <span class="acg-project-label">專案:</span>
+              <span class="acg-project-name" id="acgProjectName">—</span>
+              <button class="acg-edit-btn" id="acgEditProjectName" title="編輯專案名稱">✎</button>
+            </div>
+            <div class="acg-meta-row">
+              <span class="acg-project-label">牙醫:</span>
+              <span class="acg-project-name" id="acgDentistName">—</span>
+              <button class="acg-edit-btn" id="acgEditDentistName" title="編輯醫生名稱">✎</button>
+            </div>
+          </div>
+        </div>
+        <!-- 步驟進度 -->
+        <div class="acg-steps">
+          <div class="acg-step active" data-step="1">
+            <span class="acg-step-dot">●</span>
+            <span class="acg-step-label">選擇顏色</span>
+          </div>
+          <div class="acg-step-line"></div>
+          <div class="acg-step" data-step="2">
+            <span class="acg-step-dot">○</span>
+            <span class="acg-step-label">選擇材料</span>
+          </div>
+          <div class="acg-step-line"></div>
+          <div class="acg-step" data-step="3">
+            <span class="acg-step-dot">○</span>
+            <span class="acg-step-label">取得配方</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主視圖 -->
+      <div class="acg-viewer" id="acgViewer">
+        <div class="acg-viewer-canvas-wrap" id="acgCanvasWrap">
+          <canvas id="acgCanvas"></canvas>
+          <!-- 左上角工具按鈕群 -->
+          <div class="acg-overlay-tools hidden" id="acgOverlayTools">
+            <button class="acg-crop-btn" id="acgCropBtn" title="裁切圖片">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2v4H2"></path>
+                <path d="M18 22v-4h4"></path>
+                <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+              </svg>
+            </button>
+            <button class="acg-reset-btn hidden" id="acgResetView" title="還原裁切前的圖片">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+            </button>
+          </div>
+          <!-- 裁切工具列（進入裁切模式才顯示） -->
+          <div class="acg-crop-toolbar hidden" id="acgCropToolbar">
+            <div class="acg-crop-ratios">
+              <button class="acg-crop-ratio active" data-ratio="free">自訂</button>
+              <button class="acg-crop-ratio" data-ratio="1:1">1:1</button>
+              <button class="acg-crop-ratio" data-ratio="3:4">3:4</button>
+              <button class="acg-crop-ratio" data-ratio="16:9">16:9</button>
+            </div>
+            <div class="acg-crop-actions">
+              <button class="acg-crop-act" id="acgCropApply" title="套用裁切">✓</button>
+              <button class="acg-crop-act cancel" id="acgCropCancel" title="取消裁切">✕</button>
+            </div>
+          </div>
+          <!-- 裁切覆蓋層 -->
+          <canvas class="acg-crop-overlay hidden" id="acgCropOverlay"></canvas>
+          <div class="acg-viewer-hint" id="acgViewerHint">
+            <div class="acg-hint-icon">🖼️</div>
+            <div class="acg-hint-text">主視圖</div>
+            <div class="acg-hint-sub">從左側圖庫選擇圖片</div>
+          </div>
+        </div>
+        <div class="acg-viewer-label" id="acgViewerLabel"></div>
+      </div>
+    </section>
+
+    <!-- ===== 右側面板：配方設定 ===== -->
+    <aside class="acg-right-panel">
+      <!-- ===== 步驟1：選擇顏色 ===== -->
+      <div class="acg-right-panel-scroll" id="acgStep1Panel">
+      <!-- 配方選項 -->
+      <div class="acg-panel-section">
+        <div class="acg-option-header">
+          <span class="acg-option-title">配方選項</span>
+          <button class="acg-info-btn" data-tooltip="單區域僅配中部區，三區域分別配頸部、中部、切端" title="選擇單區域或三區域配方模式">ⓘ</button>
+        </div>
+        <div class="acg-radio-group acg-radio-row">
+          <label class="acg-radio-item">
+            <input type="radio" name="recipeZone" value="single">
+            <span>單區域</span>
+          </label>
+          <label class="acg-radio-item">
+            <input type="radio" name="recipeZone" value="triple" checked>
+            <span>三區域</span>
+          </label>
+        </div>
+      </div>
+
+      <hr class="acg-divider">
+
+      <!-- 配方類型 -->
+      <div class="acg-panel-section">
+        <div class="acg-option-header">
+          <span class="acg-option-title">配方類型</span>
+          <button class="acg-info-btn" data-tooltip="染色適合快速調色，分層提供更細緻的層次控制" title="選擇染色或分層配方方式">ⓘ</button>
+        </div>
+        <div class="acg-radio-group acg-radio-row">
+          <label class="acg-radio-item">
+            <input type="radio" name="recipeType" value="staining" checked>
+            <span>染色</span>
+          </label>
+          <label class="acg-radio-item">
+            <input type="radio" name="recipeType" value="layering">
+            <span>分層</span>
+          </label>
+        </div>
+      </div>
+
+      <hr class="acg-divider">
+
+      <!-- 基牙色 -->
+      <div class="acg-panel-section">
+        <div class="acg-option-header">
+          <span class="acg-option-title">基牙色</span>
+          <button class="acg-info-btn" data-tooltip="根據基牙顓色選擇對應的色號系統" title="選擇基牙色系統">ⓘ</button>
+        </div>
+        <div class="acg-select-wrap acg-system-select-wrap">
+          <select class="acg-select acg-system-select" id="acgBaseShadeSystem">
+            <option value="ips-natural-die">IPS Natural Die Material</option>
+            <option value="matisse-colormodel">Matisse ColorModel Resin</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="acg-divider">
+
+      <!-- 基牙顏色（可選） -->
+      <div class="acg-panel-section">
+        <div class="acg-option-header">
+          <span class="acg-option-title">基牙顏色（可選）</span>
+          <button class="acg-info-btn" data-tooltip="可選填寫，指定基牙實際色號以提高配方精準度" title="選擇基牙實際顏色">ⓘ</button>
+        </div>
+        <div class="acg-select-wrap acg-system-select-wrap">
+          <select class="acg-select acg-system-select" id="acgBaseColorSystem">
+            <option value="vita-3d">VITA 3D Master</option>
+            <option value="vita-classical">VITA Classical</option>
+            <option value="natural-die">Natural Die Material</option>
+          </select>
+        </div>
+        <div class="acg-zone-selects" id="acgBaseZoneSelects">
+          <div class="acg-zone-row" data-zone="gingival">
+            <span class="acg-zone-label">頸部區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="gingival">
+            <select class="acg-select acg-zone-select" id="acgBaseZoneGingival">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+          <div class="acg-zone-row" data-zone="middle">
+            <span class="acg-zone-label">中部區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="middle">
+            <select class="acg-select acg-zone-select" id="acgBaseZoneMiddle">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+          <div class="acg-zone-row" data-zone="incisal">
+            <span class="acg-zone-label">切端區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="incisal">
+            <select class="acg-select acg-zone-select" id="acgBaseZoneIncisal">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <hr class="acg-divider">
+
+      <!-- 目標色 -->
+      <div class="acg-panel-section">
+        <div class="acg-option-header">
+          <span class="acg-option-title">目標色</span>
+          <button class="acg-info-btn" data-tooltip="選擇最終希望達成的目標色號及各區域明度、彩度" title="選擇目標色系統及各區域色階">ⓘ</button>
+        </div>
+        <div class="acg-select-wrap acg-system-select-wrap">
+          <select class="acg-select acg-system-select" id="acgTargetColorSystem">
+            <option value="vita-3d">VITA 3D Master</option>
+            <option value="vita-classical">VITA Classical</option>
+          </select>
+        </div>
+
+        <!-- 明度 -->
+        <div class="acg-zone-selects" id="acgTargetValueZones">
+          <div class="acg-subsection-label">明度</div>
+          <div class="acg-zone-row" data-zone="gingival">
+            <span class="acg-zone-label">頸部區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="gingival">
+            <select class="acg-select acg-zone-select" id="acgTargetValueGingival">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+          <div class="acg-zone-row" data-zone="middle">
+            <span class="acg-zone-label">中部區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="middle">
+            <select class="acg-select acg-zone-select" id="acgTargetValueMiddle">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+          <div class="acg-zone-row" data-zone="incisal">
+            <span class="acg-zone-label">切端區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="incisal">
+            <select class="acg-select acg-zone-select" id="acgTargetValueIncisal">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Chroma -->
+        <div class="acg-zone-selects" id="acgTargetChromaZones">
+          <div class="acg-subsection-label">Chroma</div>
+          <div class="acg-zone-row" data-zone="gingival">
+            <span class="acg-zone-label">頸部區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="gingival">
+            <select class="acg-select acg-zone-select" id="acgTargetChromaGingival">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+          <div class="acg-zone-row" data-zone="middle">
+            <span class="acg-zone-label">中部區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="middle">
+            <select class="acg-select acg-zone-select" id="acgTargetChromaMiddle">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+          <div class="acg-zone-row" data-zone="incisal">
+            <span class="acg-zone-label">切端區</span>
+            <div class="acg-zone-line"></div>
+          </div>
+          <div class="acg-select-wrap" data-zone="incisal">
+            <select class="acg-select acg-zone-select" id="acgTargetChromaIncisal">
+              <option value="">VITA 3D</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- ===== 步驟2：選擇材料 ===== -->
+      <div class="acg-right-panel-scroll acg-step-hidden" id="acgStep2Panel">
+        <!-- 框架選項 -->
+        <div class="acg-panel-section">
+          <div class="acg-option-header">
+            <span class="acg-option-title">框架選項</span>
+            <button class="acg-info-btn" data-tooltip="選擇框架材料影響透明度與色彩表現" title="選擇框架材料">ⓘ</button>
+          </div>
+          <div class="acg-select-wrap">
+            <select class="acg-select" id="acgFramework">
+              <optgroup label="Zirkon Art">
+                <option value="zirkon-sl-puro">Zirkon Art - Smart line Puro</option>
+                <option value="zirkon-sl-a1">Zirkon Art - Smart line A1</option>
+                <option value="zirkon-pl-a1">Zirkon Art - Performance line A1</option>
+                <option value="zirkon-sl-a3">Zirkon Art - Smart line A3</option>
+                <option value="zirkon-pl-a2">Zirkon Art - Performance line A2</option>
+                <option value="zirkon-sl-d2">Zirkon Art - Smart line D2</option>
+              </optgroup>
+              <optgroup label="Aidite 3D Pro">
+                <option value="aidite-bleach">Aidite 3D Pro - Aidite 3D Bleach</option>
+                <option value="aidite-a1">Aidite 3D Pro - Aidite 3D A1</option>
+                <option value="aidite-a2">Aidite 3D Pro - Aidite 3D A2</option>
+                <option value="aidite-a3">Aidite 3D Pro - Aidite 3D A3</option>
+                <option value="aidite-a4">Aidite 3D Pro - Aidite 3D A4</option>
+              </optgroup>
+              <optgroup label="Livento Press">
+                <option value="livento-mo0">Livento Press - MO 0</option>
+                <option value="livento-mo1">Livento Press - MO 1</option>
+                <option value="livento-lta1">Livento Press - LT A1</option>
+                <option value="livento-lta0">Livento Press - LT A0</option>
+                <option value="livento-lta2">Livento Press - LT A2</option>
+                <option value="livento-lta3">Livento Press - LT A3</option>
+              </optgroup>
+              <optgroup label="KATANA zirconia">
+                <option value="katana-html-nw">KATANA zirconia - HTML NW</option>
+                <option value="katana-html-a2">KATANA zirconia - HTML A2</option>
+                <option value="katana-html-a1">KATANA zirconia - HTML A1</option>
+                <option value="katana-stml-a1">KATANA zirconia - STML A1</option>
+                <option value="katana-stml-a2">KATANA zirconia - STML A2</option>
+                <option value="katana-stml-b1">KATANA zirconia - STML B1</option>
+                <option value="katana-utml-a1">KATANA zirconia - UTML A1</option>
+                <option value="katana-utml-a2">KATANA zirconia - UTML A2</option>
+                <option value="katana-utml-b1">KATANA zirconia - UTML B1</option>
+                <option value="katana-ht10">KATANA zirconia - HT 10</option>
+                <option value="katana-ht12">KATANA zirconia - HT 12</option>
+                <option value="katana-ht13">KATANA zirconia - HT 13</option>
+                <option value="katana-lt10">KATANA zirconia - LT10</option>
+                <option value="katana-lt12">KATANA zirconia - LT12</option>
+                <option value="katana-lt13">KATANA zirconia - LT13</option>
+              </optgroup>
+              <optgroup label="IPS e.max Press">
+                <option value="emax-ho0">IPS e.max Press - HO 0</option>
+                <option value="emax-ho1">IPS e.max Press - HO 1</option>
+                <option value="emax-ho2">IPS e.max Press - HO 2</option>
+                <option value="emax-mo0">IPS e.max Press - MO 0</option>
+                <option value="emax-mo1">IPS e.max Press - MO 1</option>
+                <option value="emax-mo2">IPS e.max Press - MO 2</option>
+                <option value="emax-lta1">IPS e.max Press - LT A1</option>
+                <option value="emax-lta2">IPS e.max Press - LT A2</option>
+                <option value="emax-lta3">IPS e.max Press - LT A3</option>
+                <option value="emax-mtbl2">IPS e.max Press - MT BL2</option>
+                <option value="emax-mta2">IPS e.max Press - MT A2</option>
+                <option value="emax-mta3">IPS e.max Press - MT A3</option>
+              </optgroup>
+              <optgroup label="emax ZirCAD Prime">
+                <option value="zircad-bl2">emax ZirCAD Prime - BL2</option>
+                <option value="zircad-bl3">emax ZirCAD Prime - BL3</option>
+                <option value="zircad-a1">emax ZirCAD Prime - A1</option>
+                <option value="zircad-a2">emax ZirCAD Prime - A2</option>
+                <option value="zircad-a3">emax ZirCAD Prime - A3</option>
+              </optgroup>
+              <optgroup label="GC Initial LiSi Press">
+                <option value="gc-mo0">GC Initial LiSi Press - MO 0</option>
+                <option value="gc-mo1">GC Initial LiSi Press - MO 1</option>
+                <option value="gc-mo2">GC Initial LiSi Press - MO 2</option>
+                <option value="gc-lta1">GC Initial LiSi Press - LT A1</option>
+                <option value="gc-lta2">GC Initial LiSi Press - LT A2</option>
+                <option value="gc-lta3">GC Initial LiSi Press - LT A3</option>
+                <option value="gc-ltb0">GC Initial LiSi Press - LTB0</option>
+                <option value="gc-ltb00">GC Initial LiSi Press - LTB00</option>
+                <option value="gc-mta2">GC Initial LiSi Press - MTA2</option>
+                <option value="gc-mta1">GC Initial LiSi Press - MTA1</option>
+                <option value="gc-mtb0">GC Initial LiSi Press - MTB0</option>
+                <option value="gc-mtb00">GC Initial LiSi Press - MTB00</option>
+                <option value="gc-exw">GC Initial LiSi Press - EXW</option>
+              </optgroup>
+              <optgroup label="Amber Press">
+                <option value="amber-mo0">Amber Press - MO 0</option>
+                <option value="amber-mo1">Amber Press - MO 1</option>
+                <option value="amber-ltw1">Amber Press - LT W1</option>
+                <option value="amber-ltw3">Amber Press - LT W3</option>
+                <option value="amber-lta2">Amber Press - LT A2</option>
+                <option value="amber-lta3">Amber Press - LT A3</option>
+                <option value="amber-lta35">Amber Press - LT A3.5</option>
+                <option value="amber-ltb1">Amber Press - LT B1</option>
+                <option value="amber-lta1">Amber Press - LT A1</option>
+                <option value="amber-hta1">Amber Press - HT A1</option>
+                <option value="amber-hta2">Amber Press - HT A2</option>
+                <option value="amber-hta3">Amber Press - HT A3</option>
+                <option value="amber-htw1">Amber Press - HT W1</option>
+                <option value="amber-htw3">Amber Press - HT W3</option>
+              </optgroup>
+              <optgroup label="ZirkonZahn Prettau 2 Dispersive">
+                <option value="prettau-0m1">ZirkonZahn Prettau 2 Dispersive - 0M1</option>
+                <option value="prettau-0m2">ZirkonZahn Prettau 2 Dispersive - 0M2</option>
+                <option value="prettau-0m3">ZirkonZahn Prettau 2 Dispersive - 0M3</option>
+                <option value="prettau-a1">ZirkonZahn Prettau 2 Dispersive - A1</option>
+                <option value="prettau-a2">ZirkonZahn Prettau 2 Dispersive - A2</option>
+                <option value="prettau-a3">ZirkonZahn Prettau 2 Dispersive - A3</option>
+                <option value="prettau-a35">ZirkonZahn Prettau 2 Dispersive - A3.5</option>
+                <option value="prettau-a4">ZirkonZahn Prettau 2 Dispersive - A4</option>
+                <option value="prettau-b1">ZirkonZahn Prettau 2 Dispersive - B1</option>
+                <option value="prettau-b2">ZirkonZahn Prettau 2 Dispersive - B2</option>
+                <option value="prettau-b3">ZirkonZahn Prettau 2 Dispersive - B3</option>
+                <option value="prettau-b4">ZirkonZahn Prettau 2 Dispersive - B4</option>
+                <option value="prettau-c1">ZirkonZahn Prettau 2 Dispersive - C1</option>
+                <option value="prettau-c2">ZirkonZahn Prettau 2 Dispersive - C2</option>
+                <option value="prettau-c3">ZirkonZahn Prettau 2 Dispersive - C3</option>
+                <option value="prettau-c4">ZirkonZahn Prettau 2 Dispersive - C4</option>
+                <option value="prettau-d2">ZirkonZahn Prettau 2 Dispersive - D2</option>
+                <option value="prettau-d3">ZirkonZahn Prettau 2 Dispersive - D3</option>
+                <option value="prettau-d4">ZirkonZahn Prettau 2 Dispersive - D4</option>
+              </optgroup>
+              <optgroup label="Nova Press">
+                <option value="nova-slbl1">Nova Press - SLBL1</option>
+                <option value="nova-slbl2">Nova Press - SLBL2</option>
+                <option value="nova-slbl3">Nova Press - SLBL3</option>
+                <option value="nova-slma1">Nova Press - SLM A1</option>
+                <option value="nova-slma2">Nova Press - SLM A2</option>
+                <option value="nova-sltb1">Nova Press - SLT B1</option>
+                <option value="nova-sltb2">Nova Press - SLT B2</option>
+                <option value="nova-sltb3">Nova Press - SLT B3</option>
+                <option value="nova-slblt2">Nova Press - SLBLT2</option>
+                <option value="nova-slblt3">Nova Press - SLBLT3</option>
+                <option value="nova-slblt4">Nova Press - SLBLT4</option>
+                <option value="nova-slblt5">Nova Press - SLBLT5</option>
+                <option value="nova-slma3">Nova Press - SLM A3</option>
+                <option value="nova-slma35">Nova Press - SLM A3.5</option>
+                <option value="nova-slma4">Nova Press - SLM A4</option>
+                <option value="nova-sltd3">Nova Press - SLT D3</option>
+              </optgroup>
+              <optgroup label="Celtra Press">
+                <option value="celtra-mo1">Celtra Press - MO 1</option>
+                <option value="celtra-mo2">Celtra Press - MO 2</option>
+                <option value="celtra-lta1">Celtra Press - LT A1</option>
+                <option value="celtra-lta2">Celtra Press - LT A2</option>
+                <option value="celtra-lta3">Celtra Press - LT A3</option>
+                <option value="celtra-ltb1">Celtra Press - LT B1</option>
+                <option value="celtra-ltb3">Celtra Press - LT B3</option>
+                <option value="celtra-ltc1">Celtra Press - LT C1</option>
+                <option value="celtra-ltc3">Celtra Press - LT C3</option>
+                <option value="celtra-ltd2">Celtra Press - LT D2</option>
+                <option value="celtra-ltd3">Celtra Press - LT D3</option>
+                <option value="celtra-mtbl1">Celtra Press - MT BL1</option>
+                <option value="celtra-mtbl2">Celtra Press - MT BL2</option>
+                <option value="celtra-mta1">Celtra Press - MT A1</option>
+                <option value="celtra-mta2">Celtra Press - MT A2</option>
+                <option value="celtra-mta3">Celtra Press - MT A3</option>
+                <option value="celtra-mtb1">Celtra Press - MT B1</option>
+                <option value="celtra-mtb3">Celtra Press - MT B3</option>
+                <option value="celtra-mtc1">Celtra Press - MT C1</option>
+                <option value="celtra-mtc3">Celtra Press - MT C3</option>
+                <option value="celtra-mtd2">Celtra Press - MT D2</option>
+                <option value="celtra-mtd3">Celtra Press - MT D3</option>
+                <option value="celtra-hti1">Celtra Press - HT I1</option>
+                <option value="celtra-hti2">Celtra Press - HT I2</option>
+                <option value="celtra-hti3">Celtra Press - HT I3</option>
+              </optgroup>
+              <optgroup label="KATANA zirconia YML">
+                <option value="katana-yml-nw">KATANA zirconia YML - YML NW</option>
+                <option value="katana-yml-a1">KATANA zirconia YML - YML A1</option>
+                <option value="katana-yml-a2">KATANA zirconia YML - YML A2</option>
+                <option value="katana-yml-a3">KATANA zirconia YML - YML A3</option>
+                <option value="katana-yml-a4">KATANA zirconia YML - YML A4</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <hr class="acg-divider">
+
+        <!-- 框架厚度 -->
+        <div class="acg-panel-section">
+          <div class="acg-option-header">
+            <span class="acg-option-title">框架厚度</span>
+            <button class="acg-info-btn" data-tooltip="較薄框架透明度高，較厚遮色效果較強" title="選擇框架厚度">ⓘ</button>
+          </div>
+          <div class="acg-select-wrap">
+            <select class="acg-select" id="acgFrameworkThickness">
+              <option value="0.3">0.3mm</option>
+              <option value="0.4">0.4mm</option>
+              <option value="0.5" selected>0.5mm</option>
+              <option value="0.6">0.6mm</option>
+              <option value="0.7">0.7mm</option>
+              <option value="0.8">0.8mm</option>
+              <option value="0.9">0.9mm</option>
+              <option value="1.0">1.0mm</option>
+              <option value="1.1">1.1mm</option>
+              <option value="1.2">1.2mm</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="acg-divider">
+
+        <!-- 染色品牌 -->
+        <div class="acg-panel-section">
+          <div class="acg-option-header">
+            <span class="acg-option-title">染色品牌</span>
+            <button class="acg-info-btn" data-tooltip="選擇染色材料品牌以決定可用色號" title="選擇染色品牌">ⓘ</button>
+          </div>
+          <div class="acg-select-wrap">
+            <select class="acg-select" id="acgStainingBrand">
+              <option value="ips-ivocolor-shade">IPS Ivocolor Shade</option>
+              <option value="ips-ivocolor-essence">IPS Ivocolor Essence</option>
+              <option value="ips-empress-universal">IPS Empress Universal Stain</option>
+              <option value="noritake-czr-internal">Noritake CZR Internal Stain</option>
+              <option value="noritake-czr-fc">Noritake CZR FC Paste Stain</option>
+              <option value="gc-spectrum">GC Spectrum</option>
+              <option value="coloring">COLORING</option>
+              <option value="gc-iq-one-lp">GC IQ ONE LP</option>
+              <option value="biomic">BIOMIC</option>
+              <option value="shofu-vintage-art-lf">Shofu Vintage Art LF</option>
+              <option value="ceramotion-one-touch">Ceramotion One Touch</option>
+              <option value="illusion">Illusion</option>
+              <option value="creation-magic-colour">Creation Magic Colour</option>
+              <option value="creation-innova-neo">Creation IN NOVA NEO</option>
+              <option value="dentsply-universal">Dentsply Sirona Universal Stain</option>
+              <option value="vita-akzent-plus">VITA AKZENT Plus</option>
+              <option value="dc-concept-art">DC Concept Art</option>
+              <option value="dd-contrast">DD Contrast</option>
+              <option value="heraceram-universal">Heraceram Universal Stain</option>
+              <option value="ice-stains-3d">ICE Stains 3D ZirkonZahn</option>
+              <option value="shofu-vintage-art-universal">Shofu Vintage Art Universal</option>
+              <option value="cm-soprano">CM Soprano Stain and Glaze</option>
+              <option value="creation-makeup-neo">Creation MAKE UP NEO</option>
+              <option value="zeo-ce-light">ZEO CE LIGHT STAINS</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 步驟1 底部按鈕 -->
+      <div class="acg-panel-section acg-action-section" id="acgStep1Footer">
+        <button class="btn primary acg-next-btn" id="acgNextBtn">下一步</button>
+      </div>
+
+      <!-- 步驟2 底部按鈕 -->
+      <div class="acg-panel-section acg-action-section acg-action-duo acg-step-hidden" id="acgStep2Footer">
+        <button class="btn ghost acg-back-btn" id="acgBackBtn">&lt; 返回</button>
+        <button class="btn primary acg-generate-btn" id="acgGenerateBtn">生成配方</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 聊天按鈕 -->
+  <button class="chat-fab" title="開啟聊天">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span>Chat</span>
+  </button>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui-components.js"></script>
+  <script src="js/ai-color-guide.js"></script>
+</body>
+</html>

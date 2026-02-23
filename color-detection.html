@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idensol Chroma - 色彩檢測</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/color-detection.css">
+  <link rel="stylesheet" href="css/ui-components.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <script src="js/auth.js" defer></script>
+  <script src="js/mobile.js" defer></script>
+</head>
+<body class="dashboard-body">
+  <!-- ===== 頂部導航列 ===== -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <a href="/" class="logo">
+        <span class="logo-icon">🦷</span>
+        <span class="logo-text">Idensol Chroma</span>
+      </a>
+      <nav class="main-nav">
+        <div class="nav-project-selector" id="navProjectSelector">
+          <button class="nav-project-btn" id="navProjectBtn">
+            <span class="nav-project-btn-icon">📂</span>
+            <span class="nav-project-btn-text">選擇專案</span>
+            <span class="nav-project-btn-arrow">▾</span>
+            <span class="nav-project-btn-clear" title="取消選擇" style="display:none">✕</span>
+          </button>
+          <div class="nav-project-dropdown">
+            <div class="nav-project-dropdown-header">
+              <div class="nav-project-search-wrap">
+                <svg class="nav-project-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="nav-project-search" type="text" placeholder="搜尋專案…" />
+              </div>
+            </div>
+            <div class="nav-project-list"></div>
+          </div>
+        </div>
+        <a href="/" class="nav-item active">我的項目</a>
+        <div class="nav-dropdown" id="navRecipeTakeout">
+          <button class="nav-item">食譜外帶 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">輕量版 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="recipe-dentin">1. 牙本質與釉質</button>
+                <button class="nav-dropdown-item" data-feature="recipe-staining">2. 染色與釉面</button>
+              </div>
+            </div>
+            <button class="nav-dropdown-item" data-feature="recipe-unified">一體化配方</button>
+            <button class="nav-dropdown-item" data-feature="ai-color-guide">AI色階指南 <span class="nav-beta-badge">Beta</span></button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navMastery">
+          <button class="nav-item">精通之道 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu nav-dropdown-menu-wide">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">模型製作 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-resin">1. 樹酯配方</button>
+                <button class="nav-dropdown-item" data-feature="mastery-3d-stain">2. 3D列印模型染色</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-fl-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-wash">2. 清洗燒製</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">微層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-ml-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-staining">2. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-internal">3. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-enamel">4. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全單塊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-mono-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-mono-staining">2. 染色工作室</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub"><span>牙齦 <span class="nav-beta-badge">Beta</span></span> <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-stain">1. 染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-ceramic">2. 陶瓷</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">金屬烤瓷冠 (PFM) <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque">1. 不透明層</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque-stain">2. 不透明層染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navStaining">
+          <button class="nav-item">染色工作室 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="stain-monolithic">整體式/色彩校正</button>
+            <button class="nav-dropdown-item" data-feature="stain-shade-model">色調模型/樹樁色調</button>
+            <button class="nav-dropdown-item" data-feature="stain-wash-fire">清洗燒製</button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navDigitalTryOn">
+          <button class="nav-item">數位試戴 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="color-detection">色彩檢測</button>
+            <button class="nav-dropdown-item" data-feature="ceramic-studio">陶瓷工作室</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切換深色/淺色模式">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="user-avatar" title="使用者選單">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 主內容（左側邊欄 + 右側主區域） ===== -->
+  <main class="cd-main">
+    <!-- ===== 左側面板 ===== -->
+    <aside class="cd-left-panel">
+      <!-- 圖庫 -->
+      <div class="cd-panel-section cd-gallery">
+        <div class="cd-panel-header">
+          <span class="cd-panel-title">圖庫</span>
+        </div>
+        <div class="cd-gallery-list" id="cdGalleryList">
+          <!-- JS 動態渲染 -->
+        </div>
+        <button class="cd-add-image-btn" id="cdAddImageBtn" title="新增圖片">
+          <span>+</span>
+        </button>
+        <input type="file" id="cdFileInput" accept="image/*" multiple style="display:none">
+      </div>
+
+      <!-- 數位色彩計 -->
+      <div class="cd-panel-section cd-colorimeter">
+        <button class="cd-panel-header cd-collapsible" id="colorimeterToggle">
+          <span class="cd-panel-title">數位色彩計</span>
+          <span class="cd-collapse-arrow">▾</span>
+        </button>
+        <div class="cd-colorimeter-body" id="colorimeterBody">
+          <div class="cd-color-swatch" id="cdColorSwatch">
+            <span class="cd-swatch-label">將滑鼠移到圖片上</span>
+          </div>
+          <div class="cd-color-values">
+            <div class="cd-color-row cd-color-L"><span class="cd-color-key">L:</span><span class="cd-color-val" id="cdValL">0.00</span></div>
+            <div class="cd-color-row cd-color-a"><span class="cd-color-key">a:</span><span class="cd-color-val" id="cdValA">0.00</span></div>
+            <div class="cd-color-row cd-color-b"><span class="cd-color-key">b:</span><span class="cd-color-val" id="cdValB">0.00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 去霧 -->
+      <div class="cd-panel-section cd-dehaze">
+        <button class="cd-panel-header cd-collapsible" id="dehazeToggle">
+          <span class="cd-panel-title">去霧</span>
+          <span class="cd-collapse-arrow">▾</span>
+        </button>
+        <div class="cd-dehaze-body" id="dehazeBody">
+          <div class="cd-dehaze-toggle-row">
+            <button class="cd-dehaze-btn active" data-level="high">高</button>
+            <button class="cd-dehaze-btn" data-level="low">低</button>
+          </div>
+          <div class="cd-slider-group">
+            <label class="cd-slider-label">亮度 <span class="cd-slider-value" id="cdBrightnessVal">0</span></label>
+            <input type="range" class="cd-slider" id="cdBrightness" min="-100" max="100" value="0">
+          </div>
+          <label class="cd-checkbox-row">
+            <input type="checkbox" id="cdInvert">
+            <span>反轉</span>
+          </label>
+          <div class="cd-apply-row">
+            <button class="cd-apply-btn" id="cdApplyBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              套用調整
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== 中央/右側主內容區 ===== -->
+    <section class="cd-content">
+      <!-- 頂部資訊列 -->
+      <div class="cd-content-header">
+        <div class="cd-header-top">
+          <div class="cd-header-left">
+            <h2 class="cd-content-title">
+              數位試戴
+              <button class="cd-info-btn" data-tooltip="對比參考圖與目標圖的色彩差異" title="關於色彩檢測">ⓘ</button>
+            </h2>
+            <a href="#" class="cd-back-link" id="cdBackLink">← 返回專案</a>
+          </div>
+          <div class="cd-header-right">
+            <div class="cd-meta-row">
+              <span class="cd-project-label">專案:</span>
+              <span class="cd-project-name" id="cdProjectName">—</span>
+              <button class="cd-edit-btn" id="cdEditProjectName" title="編輯專案名稱">✎</button>
+            </div>
+            <div class="cd-meta-row">
+              <span class="cd-project-label">牙醫:</span>
+              <span class="cd-project-name" id="cdDentistName">—</span>
+              <button class="cd-edit-btn" id="cdEditDentistName" title="編輯醫生名稱">✎</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 視圖切換 -->
+      <div class="cd-view-toggle-row">
+        <label class="cd-checkbox-row">
+          <input type="checkbox" id="cdVerticalToggle">
+          <span>切換至垂直視圖</span>
+        </label>
+      </div>
+
+      <!-- 雙圖對比區域 -->
+      <div class="cd-dual-viewer" id="cdDualViewer">
+        <!-- 參考圖 -->
+        <div class="cd-viewer-panel" id="cdRefPanel">
+          <div class="cd-viewer-label-bar">
+            <span class="cd-viewer-label">參考圖</span>
+            <div class="cd-viewer-tools">
+              <button class="cd-tool-btn" id="cdRefZoomOut" title="縮小">−</button>
+              <button class="cd-tool-btn" id="cdRefZoomIn" title="放大">+</button>
+            </div>
+          </div>
+          <div class="cd-viewer-canvas-wrap" id="cdRefCanvasWrap">
+            <canvas id="cdRefCanvas"></canvas>
+            <div class="cd-viewer-hint" id="cdRefHint">
+              <div class="cd-hint-icon">🖼️</div>
+              <div class="cd-hint-text">參考圖</div>
+              <div class="cd-hint-sub">從圖庫選擇或上傳圖片</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 目標圖 -->
+        <div class="cd-viewer-panel" id="cdTargetPanel">
+          <div class="cd-viewer-label-bar">
+            <span class="cd-viewer-label">目標圖</span>
+            <div class="cd-viewer-tools">
+              <button class="cd-tool-btn" id="cdTargetZoomOut" title="縮小">−</button>
+              <button class="cd-tool-btn" id="cdTargetZoomIn" title="放大">+</button>
+            </div>
+          </div>
+          <div class="cd-viewer-canvas-wrap" id="cdTargetCanvasWrap">
+            <canvas id="cdTargetCanvas"></canvas>
+            <div class="cd-viewer-hint" id="cdTargetHint">
+              <div class="cd-hint-icon">🖼️</div>
+              <div class="cd-hint-text">目標圖</div>
+              <div class="cd-hint-sub">從圖庫選擇或上傳圖片</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 色彩檢測器 -->
+      <div class="cd-detector">
+        <div class="cd-detector-header" id="detectorToggle">
+          <div class="cd-detector-title-row">
+            <span class="cd-detector-title">色彩檢測器</span>
+            <button class="cd-info-btn" data-tooltip="在三個區域取色並比對 Lab 數值" title="說明">ⓘ</button>
+            <button class="cd-tool-btn cd-reset-detector" id="cdResetDetector" title="重設">↺</button>
+          </div>
+          <span class="cd-collapse-arrow">▾</span>
+        </div>
+        <div class="cd-detector-body" id="detectorBody">
+          <div class="cd-detector-zones">
+            <!-- 頸部區 -->
+            <div class="cd-zone">
+              <div class="cd-zone-title">頸部區</div>
+              <div class="cd-zone-colors">
+                <div class="cd-zone-color">
+                  <button class="cd-pick-btn" data-zone="cervical" data-side="left" title="在參考圖上取色">🖊</button>
+                  <div class="cd-zone-swatch" id="cdZoneCervicalLeft"></div>
+                  <span class="cd-zone-separator" id="cdZoneSepCervical">──</span>
+                  <div class="cd-zone-swatch" id="cdZoneCervicalRight"></div>
+                  <button class="cd-pick-btn" data-zone="cervical" data-side="right" title="在目標圖上取色">🖊</button>
+                </div>
+              </div>
+              <div class="cd-zone-values">
+                <div class="cd-zone-val-col" id="cdZoneValCervicalLeft">
+                  <span>L: —</span><span>a: —</span><span>b: —</span>
+                </div>
+                <div class="cd-zone-val-spacer"></div>
+                <div class="cd-zone-val-col" id="cdZoneValCervicalRight">
+                  <span>L: —</span><span>a: —</span><span>b: —</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 中部區 -->
+            <div class="cd-zone">
+              <div class="cd-zone-title">中部區</div>
+              <div class="cd-zone-colors">
+                <div class="cd-zone-color">
+                  <button class="cd-pick-btn" data-zone="middle" data-side="left" title="在參考圖上取色">🖊</button>
+                  <div class="cd-zone-swatch" id="cdZoneMiddleLeft"></div>
+                  <span class="cd-zone-separator" id="cdZoneSepMiddle">──</span>
+                  <div class="cd-zone-swatch" id="cdZoneMiddleRight"></div>
+                  <button class="cd-pick-btn" data-zone="middle" data-side="right" title="在目標圖上取色">🖊</button>
+                </div>
+              </div>
+              <div class="cd-zone-values">
+                <div class="cd-zone-val-col" id="cdZoneValMiddleLeft">
+                  <span>L: —</span><span>a: —</span><span>b: —</span>
+                </div>
+                <div class="cd-zone-val-spacer"></div>
+                <div class="cd-zone-val-col" id="cdZoneValMiddleRight">
+                  <span>L: —</span><span>a: —</span><span>b: —</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 切端區 -->
+            <div class="cd-zone">
+              <div class="cd-zone-title">切端區</div>
+              <div class="cd-zone-colors">
+                <div class="cd-zone-color">
+                  <button class="cd-pick-btn" data-zone="incisal" data-side="left" title="在參考圖上取色">🖊</button>
+                  <div class="cd-zone-swatch" id="cdZoneIncisalLeft"></div>
+                  <span class="cd-zone-separator" id="cdZoneSepIncisal">──</span>
+                  <div class="cd-zone-swatch" id="cdZoneIncisalRight"></div>
+                  <button class="cd-pick-btn" data-zone="incisal" data-side="right" title="在目標圖上取色">🖊</button>
+                </div>
+              </div>
+              <div class="cd-zone-values">
+                <div class="cd-zone-val-col" id="cdZoneValIncisalLeft">
+                  <span>L: —</span><span>a: —</span><span>b: —</span>
+                </div>
+                <div class="cd-zone-val-spacer"></div>
+                <div class="cd-zone-val-col" id="cdZoneValIncisalRight">
+                  <span>L: —</span><span>a: —</span><span>b: —</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 圖庫選擇彈窗：放到參考圖或目標圖 -->
+  <div class="cd-placement-modal hidden" id="cdPlacementModal">
+    <div class="cd-placement-overlay"></div>
+    <div class="cd-placement-dialog">
+      <div class="cd-placement-header">選擇放置位置</div>
+      <div class="cd-placement-body">
+        <p id="cdPlacementImageName"></p>
+        <div class="cd-placement-btns">
+          <button class="btn cd-placement-btn" data-target="ref">
+            <span class="cd-placement-icon">⬅</span>
+            <span class="cd-placement-label">參考圖（左側）</span>
+          </button>
+          <button class="btn cd-placement-btn" data-target="target">
+            <span class="cd-placement-icon">➡</span>
+            <span class="cd-placement-label">目標圖（右側）</span>
+          </button>
+        </div>
+      </div>
+      <div class="cd-placement-footer">
+        <button class="btn cd-placement-cancel" id="cdPlacementCancel">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 聊天按鈕 -->
+  <button class="chat-fab" title="開啟聊天">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+  </button>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui-components.js"></script>
+  <script src="js/color-detection.js"></script>
+</body>
+</html>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idensol Chroma - 帳號管理</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/ui-components.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <script src="js/auth.js" defer></script>
+  <script src="js/mobile.js" defer></script>
+  <style>
+    .account-main {
+      padding: 32px 24px;
+      min-height: calc(100vh - 60px);
+    }
+    .account-container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .account-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .account-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* 標籤頁 */
+    .account-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 28px;
+    }
+    .account-tab {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .2s;
+    }
+    .account-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .account-tab:hover:not(.active) { color: var(--text); }
+
+    /* 面板 */
+    .account-panel { display: none; }
+    .account-panel.active { display: block; }
+
+    /* 卡片 */
+    .account-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px var(--shadow-color);
+    }
+    .account-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .account-card-title svg {
+      color: var(--primary);
+    }
+
+    /* 表單 */
+    .acc-form { display: flex; flex-direction: column; gap: 18px; }
+    .acc-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .acc-field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .acc-field input,
+    .acc-field select {
+      padding: 10px 14px;
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .acc-field select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .acc-field input:focus,
+    .acc-field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    /* 密碼欄位包裹器 */
+    .pw-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pw-input-wrap input {
+      width: 100%;
+      padding-right: 42px !important;
+    }
+    .pw-toggle-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .15s;
+    }
+    .pw-toggle-btn:hover {
+      color: var(--text);
+    }
+
+    .acc-field input:read-only {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .acc-field .field-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .acc-field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 560px) {
+      .acc-field-row { grid-template-columns: 1fr; }
+    }
+
+    /* 按鈕 */
+    .acc-btn {
+      padding: 11px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    .acc-btn:active { transform: scale(0.98); }
+    .acc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .acc-btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+    }
+    .acc-btn-primary:hover { opacity: 0.92; }
+    .acc-btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    /* 訊息 */
+    .acc-msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: center;
+      display: none;
+      margin-bottom: 16px;
+    }
+    .acc-msg.show { display: block; }
+    .acc-msg.error {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger);
+    }
+    .acc-msg.success {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    /* 帳號資訊摘要 */
+    .account-info-banner {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 28px;
+      padding: 20px 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px var(--shadow-color);
+    }
+    .account-avatar-big {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .account-info-text h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 4px;
+    }
+    .account-info-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .account-info-text .role-badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--info-bg);
+      color: var(--info-text);
+    }
+
+    /* 密碼需求 */
+    .pw-requirements {
+      list-style: none;
+      padding: 0;
+      margin: 2px 0 0;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .pw-requirements li {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pw-requirements li::before { content: '○'; font-size: 10px; flex-shrink: 0; }
+    .pw-requirements li.pass { color: var(--success); }
+    .pw-requirements li.pass::before { content: '✓'; }
+
+    /* 頭像上傳 */
+    .avatar-editor {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 0;
+    }
+    .avatar-preview-wrapper {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-size: 32px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 3px solid var(--border);
+      transition: border-color .2s;
+    }
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-preview-wrapper:hover .avatar-preview {
+      border-color: var(--primary);
+    }
+    .avatar-preview-wrapper:hover .avatar-overlay {
+      opacity: 1;
+    }
+    .avatar-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .2s;
+      cursor: pointer;
+    }
+    .avatar-overlay svg {
+      color: #fff;
+    }
+    .avatar-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .avatar-actions .avatar-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .avatar-btn {
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .avatar-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .avatar-btn-remove {
+      border-color: var(--danger-border);
+      color: var(--danger);
+    }
+    .avatar-btn-remove:hover {
+      background: var(--danger-bg);
+    }
+    .avatar-btn-group {
+      display: flex;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body class="dashboard-body">
+  <!-- ===== 頂部導航列 ===== -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <a href="/" class="logo">
+        <span class="logo-icon">🦷</span>
+        <span class="logo-text">Idensol Chroma</span>
+      </a>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切換深色/淺色模式">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="user-avatar" title="使用者選單">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 主內容 ===== -->
+  <main class="account-main">
+    <div class="account-container">
+      <!-- 帳號摘要 -->
+      <div class="account-info-banner" id="accountBanner">
+        <div class="account-avatar-big" id="bigAvatar">?</div>
+        <div class="account-info-text">
+          <h2 id="bannerName">載入中...</h2>
+          <p id="bannerUsername">@---</p>
+          <span class="role-badge" id="bannerRole">---</span>
+        </div>
+      </div>
+
+      <div class="account-title">帳號管理</div>
+      <div class="account-subtitle">管理您的個人資料與帳號安全設定</div>
+
+      <!-- 標籤頁 -->
+      <div class="account-tabs">
+        <button class="account-tab active" data-panel="profile">個人資料</button>
+        <button class="account-tab" data-panel="security">安全設定</button>
+      </div>
+
+      <!-- 訊息 -->
+      <div class="acc-msg" id="accMsg"></div>
+
+      <!-- ▸ 個人資料面板 -->
+      <div class="account-panel active" id="panelProfile">
+        <!-- 頭像設定 -->
+        <div class="account-card">
+          <div class="account-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+            個人頭像
+          </div>
+          <div class="avatar-editor">
+            <div class="avatar-preview-wrapper">
+              <div class="avatar-preview" id="avatarPreview">?</div>
+              <div class="avatar-overlay" id="avatarOverlay" title="點擊更換頭像">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <input type="file" id="avatarInput" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
+            </div>
+            <div class="avatar-actions">
+              <div class="avatar-btn-group">
+                <button type="button" class="avatar-btn" id="avatarUploadBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  上傳頭像
+                </button>
+                <button type="button" class="avatar-btn avatar-btn-remove" id="avatarRemoveBtn" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  移除
+                </button>
+              </div>
+              <div class="avatar-hint">支援 JPG、PNG、WebP、GIF，最大 1.5MB</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="account-card">
+          <div class="account-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            基本資料
+          </div>
+          <form class="acc-form" id="profileForm">
+            <div class="acc-field">
+              <label>帳號</label>
+              <input type="text" id="accUsername" readonly>
+              <div class="field-hint">帳號建立後無法變更</div>
+            </div>
+            <div class="acc-field-row">
+              <div class="acc-field">
+                <label>姓名 *</label>
+                <input type="text" id="accDisplayName" required>
+              </div>
+              <div class="acc-field">
+                <label>電子郵件 *</label>
+                <input type="email" id="accEmail" required>
+              </div>
+            </div>
+            <div class="acc-field-row">
+              <div class="acc-field">
+                <label>聯絡電話</label>
+                <input type="tel" id="accPhone" placeholder="選填">
+              </div>
+              <div class="acc-field">
+                <label>職業身份</label>
+                <select id="accRole">
+                  <option value="">請選擇</option>
+                  <option value="dentist">牙醫師</option>
+                  <option value="technician">牙技師</option>
+                  <option value="assistant">牙醫助理</option>
+                  <option value="student">學生</option>
+                  <option value="other">其他</option>
+                </select>
+              </div>
+            </div>
+            <div class="acc-field-row">
+              <div class="acc-field">
+                <label>診所 / 技工所名稱</label>
+                <input type="text" id="accClinic" placeholder="選填">
+              </div>
+              <div class="acc-field">
+                <label>證書字號</label>
+                <input type="text" id="accLicense" placeholder="選填">
+                <div class="field-hint">牙醫師 / 牙技師執照字號</div>
+              </div>
+            </div>
+            <div class="acc-btn-row">
+              <button type="submit" class="acc-btn acc-btn-primary">儲存變更</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ▸ 安全設定面板 -->
+      <div class="account-panel" id="panelSecurity">
+        <div class="account-card">
+          <div class="account-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            變更密碼
+          </div>
+          <form class="acc-form" id="passwordForm">
+            <div class="acc-field">
+              <label>目前密碼</label>
+              <div class="pw-input-wrap">
+                <input type="password" id="accCurrentPw" required autocomplete="current-password">
+                <button type="button" class="pw-toggle-btn" tabindex="-1" aria-label="顯示密碼">
+                  <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="acc-field">
+              <label>新密碼</label>
+              <div class="pw-input-wrap">
+                <input type="password" id="accNewPw" required autocomplete="new-password" minlength="8">
+                <button type="button" class="pw-toggle-btn" tabindex="-1" aria-label="顯示密碼">
+                  <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+                </button>
+              </div>
+              <ul class="pw-requirements">
+                <li id="accPwReqLen">至少 8 個字元</li>
+                <li id="accPwReqLetter">包含英文字母</li>
+                <li id="accPwReqNum">包含數字</li>
+              </ul>
+            </div>
+            <div class="acc-field">
+              <label>確認新密碼</label>
+              <div class="pw-input-wrap">
+                <input type="password" id="accNewPwConfirm" required autocomplete="new-password">
+                <button type="button" class="pw-toggle-btn" tabindex="-1" aria-label="顯示密碼">
+                  <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="acc-btn-row">
+              <button type="submit" class="acc-btn acc-btn-primary">變更密碼</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  (function() {
+    /* === 密碼顯示/隱藏切換 === */
+    document.querySelectorAll('.pw-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wrap = btn.closest('.pw-input-wrap');
+        const input = wrap.querySelector('input');
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.querySelector('.eye-open').style.display = isPassword ? 'none' : '';
+        btn.querySelector('.eye-closed').style.display = isPassword ? '' : 'none';
+      });
+    });
+
+    /* === 主題 === */
+    const saved = localStorage.getItem('idensol-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('idensol-theme', next);
+    });
+
+    /* === 標籤頁切換 === */
+    const tabs = document.querySelectorAll('.account-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.account-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel' + capitalize(tab.dataset.panel)).classList.add('active');
+        hideMsg();
+      });
+    });
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    /* === 訊息 === */
+    const msgBox = document.getElementById('accMsg');
+    function showMsg(text, type) {
+      msgBox.textContent = text;
+      msgBox.className = 'acc-msg show ' + type;
+      msgBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function hideMsg() { msgBox.className = 'acc-msg'; }
+
+    /* === 角色名稱對照 === */
+    const roleMap = {
+      dentist: '牙醫師',
+      technician: '牙技師',
+      assistant: '牙醫助理',
+      student: '學生',
+      other: '其他',
+    };
+
+    /* === 載入個人資料 === */
+    async function loadProfile() {
+      try {
+        // 帶上快取大小參數，避免重複傳輸頭像
+        const cachedSize = parseInt(localStorage.getItem('avatar_cache_size') || '0', 10);
+        const qs = cachedSize ? '?avatar_cache_size=' + cachedSize : '';
+        const res = await fetch('/api/auth/profile' + qs);
+        const data = await res.json();
+        if (!data.ok) { window.location.href = '/login'; return; }
+        const p = data.profile;
+
+        // 處理頭像快取
+        if (p.avatar === '__cached__') {
+          p.avatar = localStorage.getItem('avatar_cache') || null;
+        } else if (p.avatar) {
+          try {
+            localStorage.setItem('avatar_cache', p.avatar);
+            localStorage.setItem('avatar_cache_size', String(p.avatar_size || p.avatar.length));
+          } catch { /* ignore */ }
+        } else {
+          try {
+            localStorage.removeItem('avatar_cache');
+            localStorage.removeItem('avatar_cache_size');
+          } catch { /* ignore */ }
+        }
+
+        document.getElementById('accUsername').value = p.username;
+        document.getElementById('accDisplayName').value = p.display_name;
+        document.getElementById('accEmail').value = p.email;
+        document.getElementById('accPhone').value = p.phone;
+        document.getElementById('accRole').value = p.role;
+        document.getElementById('accClinic').value = p.clinic_name;
+        document.getElementById('accLicense').value = p.license_number;
+
+        // 更新頂部摘要
+        document.getElementById('bannerName').textContent = p.display_name || p.username;
+        document.getElementById('bannerUsername').textContent = '@' + p.username;
+        document.getElementById('bannerRole').textContent = roleMap[p.role] || p.role || '未設定';
+        const initial = (p.display_name || p.username).charAt(0).toUpperCase();
+
+        // 頭像處理
+        const avatarPreview = document.getElementById('avatarPreview');
+        const bigAvatar = document.getElementById('bigAvatar');
+        const removeBtn = document.getElementById('avatarRemoveBtn');
+        const navAvatar = document.querySelector('.user-menu-wrapper .user-avatar');
+        if (p.avatar) {
+          avatarPreview.innerHTML = '<img src="' + p.avatar + '" alt="頭像">';
+          bigAvatar.innerHTML = '<img src="' + p.avatar + '" alt="頭像" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+          if (navAvatar) navAvatar.innerHTML = '<img src="' + p.avatar + '" alt="頭像" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+          removeBtn.style.display = '';
+        } else {
+          avatarPreview.textContent = initial;
+          bigAvatar.textContent = initial;
+          if (navAvatar) navAvatar.innerHTML = '<span style="font-size:14px;font-weight:700;line-height:1">' + initial + '</span>';
+          removeBtn.style.display = 'none';
+        }
+      } catch {
+        window.location.href = '/login';
+      }
+    }
+    loadProfile();
+
+    /* === 頭像上傳 === */
+    const avatarInput = document.getElementById('avatarInput');
+    document.getElementById('avatarUploadBtn').addEventListener('click', () => avatarInput.click());
+    document.getElementById('avatarOverlay').addEventListener('click', () => avatarInput.click());
+
+    avatarInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // 檢查檔案類型
+      if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+        showMsg('請選擇 JPG、PNG、WebP 或 GIF 格式的圖片', 'error');
+        return;
+      }
+
+      // 檢查檔案大小 (1.5MB)
+      if (file.size > 1.5 * 1024 * 1024) {
+        showMsg('圖片檔案過大，請選擇 1.5MB 以下的圖片', 'error');
+        return;
+      }
+
+      // 讀取為 base64
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const base64Data = ev.target.result;
+
+        // 即時預覽
+        document.getElementById('avatarPreview').innerHTML = '<img src="' + base64Data + '" alt="頭像">';
+
+        try {
+          const res = await fetch('/api/auth/avatar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ avatar: base64Data }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            showMsg('頭像已更新', 'success');
+            // 更新本機快取
+            try {
+              localStorage.setItem('avatar_cache', base64Data);
+              localStorage.setItem('avatar_cache_size', String(base64Data.length));
+            } catch { /* ignore */ }
+            loadProfile();
+          } else {
+            showMsg(data.msg || '頭像上傳失敗', 'error');
+          }
+        } catch {
+          showMsg('無法連線伺服器', 'error');
+        }
+      };
+      reader.readAsDataURL(file);
+      avatarInput.value = '';  // 重置以便可重複選擇同一檔案
+    });
+
+    // 移除頭像
+    document.getElementById('avatarRemoveBtn').addEventListener('click', async () => {
+      if (!confirm('確定要移除頭像嗎？')) return;
+      try {
+        const res = await fetch('/api/auth/avatar', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          showMsg('頭像已移除', 'success');
+          // 清除本機快取
+          try {
+            localStorage.removeItem('avatar_cache');
+            localStorage.removeItem('avatar_cache_size');
+          } catch { /* ignore */ }
+          loadProfile();
+        } else {
+          showMsg(data.msg || '移除失敗', 'error');
+        }
+      } catch {
+        showMsg('無法連線伺服器', 'error');
+      }
+    });
+
+    /* === 更新個人資料 === */
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('.acc-btn-primary');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: document.getElementById('accDisplayName').value.trim(),
+            email: document.getElementById('accEmail').value.trim(),
+            phone: document.getElementById('accPhone').value.trim(),
+            role: document.getElementById('accRole').value,
+            clinic_name: document.getElementById('accClinic').value.trim(),
+            license_number: document.getElementById('accLicense').value.trim(),
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showMsg('個人資料已更新', 'success');
+          loadProfile(); // 重新載入
+        } else {
+          showMsg(data.msg || '更新失敗', 'error');
+        }
+      } catch { showMsg('無法連線伺服器', 'error'); }
+      btn.disabled = false;
+    });
+
+    /* === 新密碼即時驗證 === */
+    const newPw = document.getElementById('accNewPw');
+    const reqLen = document.getElementById('accPwReqLen');
+    const reqLetter = document.getElementById('accPwReqLetter');
+    const reqNum = document.getElementById('accPwReqNum');
+    newPw.addEventListener('input', () => {
+      const val = newPw.value;
+      reqLen.classList.toggle('pass', val.length >= 8);
+      reqLetter.classList.toggle('pass', /[a-zA-Z]/.test(val));
+      reqNum.classList.toggle('pass', /[0-9]/.test(val));
+    });
+
+    /* === 變更密碼 === */
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPw = document.getElementById('accCurrentPw').value;
+      const np = document.getElementById('accNewPw').value;
+      const npConfirm = document.getElementById('accNewPwConfirm').value;
+
+      if (!currentPw) { showMsg('請輸入目前密碼', 'error'); return; }
+      if (np.length < 8) { showMsg('新密碼至少需要 8 個字元', 'error'); return; }
+      if (!/[a-zA-Z]/.test(np)) { showMsg('新密碼必須包含至少一個英文字母', 'error'); return; }
+      if (!/[0-9]/.test(np)) { showMsg('新密碼必須包含至少一個數字', 'error'); return; }
+      if (np !== npConfirm) { showMsg('新密碼與確認密碼不一致', 'error'); return; }
+
+      const btn = e.target.querySelector('.acc-btn-primary');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/password', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            current_password: currentPw,
+            new_password: np,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showMsg('密碼已成功變更', 'success');
+          document.getElementById('passwordForm').reset();
+          [reqLen, reqLetter, reqNum].forEach(el => el.classList.remove('pass'));
+        } else {
+          showMsg(data.msg || '變更失敗', 'error');
+        }
+      } catch { showMsg('無法連線伺服器', 'error'); }
+      btn.disabled = false;
+    });
+  })();
+  </script>
+</body>
+</html>

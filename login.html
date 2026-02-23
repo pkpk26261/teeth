@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idensol Chroma - 會員登入</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/ui-components.css">
+  <style>
+    /* ===== 登入頁面專用樣式 ===== */
+    body.login-body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      transition: max-width .35s ease;
+    }
+
+    /* 品牌標識 */
+    .login-brand {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .login-brand-icon {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .login-brand-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .login-brand-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* 登入卡片 */
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px 28px;
+      box-shadow: 0 4px 24px var(--shadow-color);
+    }
+
+    /* 標籤頁切換 */
+    .login-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      border-radius: 10px;
+      background: var(--bg-subtle);
+      padding: 4px;
+    }
+    .login-tab {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+    }
+    .login-tab.active {
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 1px 4px var(--shadow-color);
+    }
+    .login-tab:hover:not(.active) {
+      color: var(--text);
+    }
+
+    /* 表單 */
+    .login-form { display: flex; flex-direction: column; gap: 18px; }
+    .login-form[hidden] { display: none; }
+
+    .login-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .login-field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .login-field input {
+      padding: 11px 14px;
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .login-field input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    /* 密碼欄位包裹器 */
+    .pw-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pw-input-wrap input {
+      width: 100%;
+      padding-right: 42px !important;
+    }
+    .pw-toggle-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .15s;
+    }
+    .pw-toggle-btn:hover {
+      color: var(--text);
+    }
+
+    .login-submit {
+      margin-top: 4px;
+      padding: 12px 0;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    .login-submit:hover { opacity: 0.92; }
+    .login-submit:active { transform: scale(0.98); }
+    .login-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ===== 步驟式進度列 ===== */
+    .reg-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      gap: 0;
+    }
+    .reg-step-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .reg-step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .25s;
+      flex-shrink: 0;
+    }
+    .reg-step-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: color .25s;
+      white-space: nowrap;
+    }
+    .reg-step-line {
+      width: 40px;
+      height: 2px;
+      background: var(--border);
+      margin: 0 6px;
+      border-radius: 1px;
+      transition: background .25s;
+      flex-shrink: 0;
+    }
+    .reg-step-item.active .reg-step-circle {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+    .reg-step-item.active .reg-step-label { color: var(--primary); }
+    .reg-step-item.done .reg-step-circle {
+      border-color: var(--success);
+      background: var(--success);
+      color: #fff;
+    }
+    .reg-step-item.done .reg-step-label { color: var(--success); }
+    .reg-step-line.done { background: var(--success); }
+    .reg-step-line.active { background: var(--primary); }
+
+    /* ===== 步驟面板 ===== */
+    .reg-panel { display: none; flex-direction: column; gap: 18px; }
+    .reg-panel.active { display: flex; }
+
+    /* 按鈕列 */
+    .reg-btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .reg-btn-row .login-submit { flex: 1; }
+    .reg-btn-back {
+      flex: 0 0 auto;
+      padding: 12px 20px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .reg-btn-back:hover { background: var(--bg-hover); }
+
+    /* 表單分組標題 */
+    .login-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: -6px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .login-section-title::before {
+      content: '';
+      display: block;
+      width: 3px;
+      height: 14px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* 欄位行 (兩欄並排) */
+    .login-field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 480px) {
+      .login-field-row { grid-template-columns: 1fr; }
+    }
+
+    /* 下拉選單 */
+    .login-field select {
+      padding: 11px 14px;
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .login-field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    /* 驗證碼 */
+    .captcha-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .captcha-img {
+      width: 140px;
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid var(--input-border);
+      background: #f5f5f5;
+      cursor: pointer;
+      flex-shrink: 0;
+      object-fit: contain;
+    }
+    .captcha-img:hover { opacity: 0.85; }
+    .captcha-refresh {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+    .captcha-refresh:hover { background: var(--bg-hover); }
+    .captcha-input { flex: 1; }
+
+    /* 提示文字 */
+    .login-field .field-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: -2px;
+    }
+
+    /* 必填標記 */
+    .required-mark {
+      color: var(--danger);
+      margin-left: 2px;
+    }
+
+    /* 密碼強度指示器 */
+    .password-strength {
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 2px;
+      overflow: hidden;
+    }
+    .password-strength-bar {
+      height: 100%;
+      width: 0;
+      border-radius: 2px;
+      transition: width .3s, background .3s;
+    }
+    .password-strength-bar.weak { width: 25%; background: #ef4444; }
+    .password-strength-bar.medium { width: 50%; background: #f59e0b; }
+    .password-strength-bar.good { width: 75%; background: #22c55e; }
+    .password-strength-bar.strong { width: 100%; background: #10b981; }
+
+    .password-strength-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* 密碼需求列表 */
+    .pw-requirements {
+      list-style: none;
+      padding: 0;
+      margin: 2px 0 0;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .pw-requirements li {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pw-requirements li::before {
+      content: '○';
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    .pw-requirements li.pass {
+      color: var(--success);
+    }
+    .pw-requirements li.pass::before {
+      content: '✓';
+    }
+
+    /* 隱私同意 */
+    .login-agree {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .login-agree input[type="checkbox"] {
+      margin-top: 2px;
+      accent-color: var(--primary);
+    }
+
+    /* 擴大卡片寬度（註冊時）*/
+    .login-container.register-mode {
+      max-width: 500px;
+    }
+
+    /* 錯誤訊息 */
+    .login-error {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger);
+      font-size: 13px;
+      text-align: center;
+    }
+    .login-error.show { display: block; }
+
+    /* 成功訊息 */
+    .login-success {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      font-size: 13px;
+      text-align: center;
+    }
+    .login-success.show { display: block; }
+
+    /* 底部 */
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* 主題切換按鈕 (右上角) */
+    .login-theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: background .15s;
+      z-index: 100;
+    }
+    .login-theme-toggle:hover { background: var(--bg-hover); }
+    [data-theme="dark"] .login-theme-toggle .icon-sun { display: inline; }
+    [data-theme="dark"] .login-theme-toggle .icon-moon { display: none; }
+    .login-theme-toggle .icon-sun { display: none; }
+    .login-theme-toggle .icon-moon { display: inline; }
+
+    /* ===== 動畫 ===== */
+    @keyframes fadeSlideIn {
+      from { opacity:0; transform: translateX(12px); }
+      to   { opacity:1; transform: translateX(0); }
+    }
+    .reg-panel.active {
+      animation: fadeSlideIn .3s ease;
+    }
+
+    /* ===== 維護模式橫幅 ===== */
+    .maintenance-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 22px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+      border: 1px solid #f0d97a;
+      color: #856404;
+      margin-bottom: 18px;
+      animation: fadeSlideIn .4s ease;
+    }
+    [data-theme="dark"] .maintenance-banner {
+      background: linear-gradient(135deg, #3d3517 0%, #4a3f1a 100%);
+      border-color: #6d5e1e;
+      color: #ffd95c;
+    }
+    .maintenance-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .maintenance-banner strong {
+      font-size: 15px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .maintenance-banner p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body class="login-body">
+  <!-- 主題切換 -->
+  <button class="login-theme-toggle" id="loginThemeToggle" title="切換深色/淺色模式">
+    <span class="icon-sun">☀️</span>
+    <span class="icon-moon">🌙</span>
+  </button>
+
+  <div class="login-container">
+    <!-- 品牌標識 -->
+    <div class="login-brand">
+      <span class="login-brand-icon">🦷</span>
+      <div class="login-brand-title">Idensol Chroma</div>
+      <div class="login-brand-subtitle">牙科數位比色系統</div>
+    </div>
+
+    <!-- 登入卡片 -->
+    <div class="login-card">
+      <!-- 登入 / 註冊 標籤切換 -->
+      <div class="login-tabs">
+        <button class="login-tab active" data-tab="login">登入</button>
+        <button class="login-tab" data-tab="register">註冊</button>
+      </div>
+
+      <!-- 錯誤 / 成功 訊息 -->
+      <div class="login-error" id="loginError"></div>
+      <div class="login-success" id="loginSuccess"></div>
+
+      <!-- ========== 登入表單 ========== -->
+      <form class="login-form" id="loginForm" autocomplete="on">
+        <div class="login-field">
+          <label for="loginUser">帳號</label>
+          <input type="text" id="loginUser" name="username" placeholder="請輸入帳號" autocomplete="username" required>
+        </div>
+        <div class="login-field">
+          <label for="loginPass">密碼</label>
+          <div class="pw-input-wrap">
+            <input type="password" id="loginPass" name="password" placeholder="請輸入密碼" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle-btn" tabindex="-1" aria-label="顯示密碼">
+              <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+            </button>
+          </div>
+          <div style="text-align:right;margin-top:2px;">
+            <a href="/forgot-password" style="font-size:12px;color:var(--primary);text-decoration:none;font-weight:500;">忘記密碼？</a>
+          </div>
+        </div>
+        <button class="login-submit" type="submit">登入</button>
+      </form>
+
+      <!-- ========== 步驟式註冊 ========== -->
+      <div class="login-form" id="registerWizard" hidden>
+
+        <!-- 步驟進度列 -->
+        <div class="reg-stepper">
+          <div class="reg-step-item active" data-step="1">
+            <div class="reg-step-circle">1</div>
+            <div class="reg-step-label">帳號設定</div>
+          </div>
+          <div class="reg-step-line" data-line="1"></div>
+          <div class="reg-step-item" data-step="2">
+            <div class="reg-step-circle">2</div>
+            <div class="reg-step-label">完成註冊</div>
+          </div>
+        </div>
+
+        <!-- ▸ 步驟一：帳號設定 -->
+        <div class="reg-panel active" id="regStep1">
+          <div class="login-section-title">帳號與密碼</div>
+          <div class="login-field">
+            <label for="regUser">帳號<span class="required-mark">*</span></label>
+            <input type="text" id="regUser" name="username" placeholder="至少 3 個字元（英文/數字）" autocomplete="username" required minlength="3">
+          </div>
+          <div class="login-field">
+            <label for="regEmail">電子郵件<span class="required-mark">*</span></label>
+            <input type="email" id="regEmail" name="email" placeholder="例：doctor@clinic.com" autocomplete="email" required>
+          </div>
+          <div class="login-field">
+            <label for="regPass">密碼<span class="required-mark">*</span></label>
+            <div class="pw-input-wrap">
+              <input type="password" id="regPass" name="password" placeholder="至少 8 個字元" autocomplete="new-password" required minlength="8">
+              <button type="button" class="pw-toggle-btn" tabindex="-1" aria-label="顯示密碼">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+              </button>
+            </div>
+            <div class="password-strength"><div class="password-strength-bar" id="pwStrengthBar"></div></div>
+            <div class="password-strength-text" id="pwStrengthText"></div>
+            <ul class="pw-requirements">
+              <li id="pwReqLen">至少 8 個字元</li>
+              <li id="pwReqLetter">包含英文字母</li>
+              <li id="pwReqNum">包含數字</li>
+            </ul>
+          </div>
+          <div class="login-field">
+            <label for="regPassConfirm">確認密碼<span class="required-mark">*</span></label>
+            <div class="pw-input-wrap">
+              <input type="password" id="regPassConfirm" name="password_confirm" placeholder="再次輸入密碼" autocomplete="new-password" required>
+              <button type="button" class="pw-toggle-btn" tabindex="-1" aria-label="顯示密碼">
+                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="reg-btn-row">
+            <button type="button" class="login-submit" id="regNext1">下一步</button>
+          </div>
+        </div>
+
+        <!-- ▸ 步驟二：個人資訊 & 完成註冊 -->
+        <div class="reg-panel" id="regStep2">
+          <div class="login-section-title">個人資訊</div>
+          <div class="login-field-row">
+            <div class="login-field">
+              <label for="regName">姓名<span class="required-mark">*</span></label>
+              <input type="text" id="regName" name="display_name" placeholder="真實姓名" required>
+            </div>
+            <div class="login-field">
+              <label for="regPhone">聯絡電話</label>
+              <input type="tel" id="regPhone" name="phone" placeholder="例：0912-345-678" autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="login-section-title">專業資訊</div>
+          <div class="login-field-row">
+            <div class="login-field">
+              <label for="regRole">職業身份<span class="required-mark">*</span></label>
+              <select id="regRole" name="role" required>
+                <option value="" disabled selected>請選擇</option>
+                <option value="dentist">牙醫師</option>
+                <option value="technician">牙技師</option>
+                <option value="assistant">牙醫助理</option>
+                <option value="student">學生</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+            <div class="login-field">
+              <label for="regLicense">證書字號</label>
+              <input type="text" id="regLicense" name="license_number" placeholder="選填">
+              <div class="field-hint">牙醫師 / 牙技師執照字號</div>
+            </div>
+          </div>
+          <div class="login-field">
+            <label for="regClinic">診所 / 技工所名稱</label>
+            <input type="text" id="regClinic" name="clinic_name" placeholder="例：大安牙醫診所">
+          </div>
+
+          <div class="login-section-title" style="margin-top:8px">安全驗證</div>
+          <div class="login-field">
+            <label>驗證碼<span class="required-mark">*</span></label>
+            <div class="captcha-row">
+              <img class="captcha-img" id="captchaImg" src="" alt="驗證碼" title="點擊重新取得">
+              <button type="button" class="captcha-refresh" id="captchaRefresh" title="重新取得驗證碼">🔄</button>
+              <input type="text" class="captcha-input" id="regCaptcha" name="captcha" placeholder="輸入驗證碼" required maxlength="4" autocomplete="off" style="padding:11px 14px;border:1px solid var(--input-border);border-radius:10px;background:var(--input-bg);color:var(--text);font-size:14px;outline:none;letter-spacing:4px;font-weight:700;">
+            </div>
+            <div class="field-hint">看不清楚？點擊圖片或 🔄 按鈕更換</div>
+          </div>
+
+          <label class="login-agree">
+            <input type="checkbox" id="regAgree" required>
+            <span>我已閱讀並同意<a href="#" style="color:var(--primary)">服務條款</a>及<a href="#" style="color:var(--primary)">隱私權政策</a></span>
+          </label>
+
+          <div class="reg-btn-row">
+            <button type="button" class="reg-btn-back" id="regBack2">上一步</button>
+            <button type="button" class="login-submit" id="regSubmitBtn">建立帳號</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-footer">
+        Idensol Chroma © 2026
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    /* --- 密碼顯示/隱藏切換 --- */
+    document.querySelectorAll('.pw-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wrap = btn.closest('.pw-input-wrap');
+        const input = wrap.querySelector('input');
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.querySelector('.eye-open').style.display = isPassword ? 'none' : '';
+        btn.querySelector('.eye-closed').style.display = isPassword ? '' : 'none';
+      });
+    });
+
+    /* --- 主題 --- */
+    const saved = localStorage.getItem('idensol-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('loginThemeToggle').addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('idensol-theme', next);
+    });
+
+    /* --- 元素 --- */
+    const container = document.querySelector('.login-container');
+    const tabs = document.querySelectorAll('.login-tab');
+    const loginForm = document.getElementById('loginForm');
+    const registerWizard = document.getElementById('registerWizard');
+    const errBox = document.getElementById('loginError');
+    const okBox = document.getElementById('loginSuccess');
+    const registerTab = document.querySelector('.login-tab[data-tab="register"]');
+
+    /* --- 載入公開系統設定 --- */
+    (async function loadPublicSettings() {
+      try {
+        const res = await fetch('/api/public/settings');
+        const data = await res.json();
+        if (data.ok && data.settings) {
+          const s = data.settings;
+          // 動態套用網站名稱
+          if (s.site_name) {
+            document.title = s.site_name + ' - 會員登入';
+            const brandTitle = document.querySelector('.login-brand-title');
+            if (brandTitle) brandTitle.textContent = s.site_name;
+            const footer = document.querySelector('.login-footer');
+            if (footer) footer.textContent = s.site_name + ' © ' + new Date().getFullYear();
+          }
+          // 動態套用網站描述
+          if (s.site_description) {
+            const brandSub = document.querySelector('.login-brand-subtitle');
+            if (brandSub) brandSub.textContent = s.site_description;
+          }
+          // 如果關閉註冊，隱藏註冊標籤
+          if (s.allow_registration === '0') {
+            if (registerTab) registerTab.style.display = 'none';
+          }
+          // 維護模式：顯示橫幅提示，隱藏註冊
+          if (s.maintenance_mode === '1') {
+            if (registerTab) registerTab.style.display = 'none';
+            // 插入維護橫幅
+            const banner = document.createElement('div');
+            banner.className = 'maintenance-banner';
+            banner.innerHTML = '<span class="maintenance-icon">🔧</span><div><strong>系統維護中</strong><p>目前僅開放擁有者帳號登入，一般帳號暫時無法登入與註冊，造成不便敬請見諒。</p></div>';
+            const card = document.querySelector('.login-card');
+            card.parentNode.insertBefore(banner, card);
+          }
+        }
+      } catch { /* ignore */ }
+    })();
+
+    /* --- 標籤頁切換 --- */
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        errBox.classList.remove('show');
+        okBox.classList.remove('show');
+        if (tab.dataset.tab === 'login') {
+          loginForm.hidden = false;
+          registerWizard.hidden = true;
+          container.classList.remove('register-mode');
+        } else {
+          loginForm.hidden = true;
+          registerWizard.hidden = false;
+          container.classList.add('register-mode');
+          goToStep(1);
+        }
+      });
+    });
+
+    function showError(msg) {
+      errBox.textContent = msg;
+      errBox.classList.add('show');
+      okBox.classList.remove('show');
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function showSuccess(msg) {
+      okBox.textContent = msg;
+      okBox.classList.add('show');
+      errBox.classList.remove('show');
+    }
+    function hideMessages() {
+      errBox.classList.remove('show');
+      okBox.classList.remove('show');
+    }
+
+    /* =============== 步驟式註冊 =============== */
+    let currentStep = 1;
+    const totalSteps = 2;
+    const panels = [null, document.getElementById('regStep1'), document.getElementById('regStep2')];
+    const stepItems = registerWizard.querySelectorAll('.reg-step-item');
+    const stepLines = registerWizard.querySelectorAll('.reg-step-line');
+
+    function goToStep(n) {
+      currentStep = n;
+      hideMessages();
+      // 更新面板
+      panels.forEach((p, i) => { if (p) p.classList.toggle('active', i === n); });
+      // 更新進度列
+      stepItems.forEach((item) => {
+        const s = parseInt(item.dataset.step);
+        item.classList.remove('active', 'done');
+        if (s === n) item.classList.add('active');
+        else if (s < n) item.classList.add('done');
+      });
+      stepLines.forEach((line) => {
+        const l = parseInt(line.dataset.line);
+        line.classList.remove('active', 'done');
+        if (l < n) line.classList.add('done');
+        else if (l === n) line.classList.add('active');
+      });
+      // 步驟二載入驗證碼
+      if (n === 2) loadCaptcha();
+    }
+
+    /* --- 步驟一驗證 & 下一步 --- */
+    document.getElementById('regNext1').addEventListener('click', () => {
+      const username = document.getElementById('regUser').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPass').value;
+      const passConfirm = document.getElementById('regPassConfirm').value;
+
+      if (!username || username.length < 3) { showError('帳號至少需要 3 個字元'); return; }
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) { showError('帳號只能包含英文、數字和底線'); return; }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('請輸入有效的電子郵件'); return; }
+      if (!pass || pass.length < 8) { showError('密碼至少需要 8 個字元'); return; }
+      if (!/[a-zA-Z]/.test(pass)) { showError('密碼必須包含至少一個英文字母'); return; }
+      if (!/[0-9]/.test(pass)) { showError('密碼必須包含至少一個數字'); return; }
+      if (pass !== passConfirm) { showError('兩次密碼不一致'); return; }
+      goToStep(2);
+    });
+
+    /* --- 回上一步 --- */
+    document.getElementById('regBack2').addEventListener('click', () => goToStep(1));
+
+    /* --- 驗證碼 (CAPTCHA) --- */
+    const captchaImg = document.getElementById('captchaImg');
+    const captchaRefresh = document.getElementById('captchaRefresh');
+
+    async function loadCaptcha() {
+      try {
+        const res = await fetch('/api/auth/captcha');
+        const data = await res.json();
+        if (data.ok && data.image) captchaImg.src = data.image;
+      } catch { /* 靜默 */ }
+      const inp = document.getElementById('regCaptcha');
+      if (inp) inp.value = '';
+    }
+    if (captchaImg) captchaImg.addEventListener('click', loadCaptcha);
+    if (captchaRefresh) captchaRefresh.addEventListener('click', loadCaptcha);
+
+    /* --- 密碼強度偵測 --- */
+    const regPass = document.getElementById('regPass');
+    const pwBar = document.getElementById('pwStrengthBar');
+    const pwText = document.getElementById('pwStrengthText');
+    const pwReqLen = document.getElementById('pwReqLen');
+    const pwReqLetter = document.getElementById('pwReqLetter');
+    const pwReqNum = document.getElementById('pwReqNum');
+
+    function checkPasswordStrength(pw) {
+      let score = 0;
+      const hasLen = pw.length >= 8;
+      const hasLetter = /[a-zA-Z]/.test(pw);
+      const hasNumber = /[0-9]/.test(pw);
+      const hasUpper = /[A-Z]/.test(pw);
+      const hasLower = /[a-z]/.test(pw);
+      const hasSpecial = /[^a-zA-Z0-9]/.test(pw);
+
+      // 更新需求清單
+      pwReqLen.classList.toggle('pass', hasLen);
+      pwReqLetter.classList.toggle('pass', hasLetter);
+      pwReqNum.classList.toggle('pass', hasNumber);
+
+      if (hasLen) score++;
+      if (pw.length >= 12) score++;
+      if (hasLetter && hasNumber) score++;
+      if (hasUpper && hasLower) score++;
+      if (hasSpecial) score++;
+
+      if (score <= 1) return { text: '弱', cls: 'weak' };
+      if (score === 2) return { text: '中等', cls: 'medium' };
+      if (score === 3) return { text: '良好', cls: 'good' };
+      return { text: '強', cls: 'strong' };
+    }
+
+    if (regPass) {
+      regPass.addEventListener('input', () => {
+        const val = regPass.value;
+        if (!val) {
+          pwBar.className = 'password-strength-bar';
+          pwText.textContent = '';
+          [pwReqLen, pwReqLetter, pwReqNum].forEach(el => el.classList.remove('pass'));
+          return;
+        }
+        const r = checkPasswordStrength(val);
+        pwBar.className = 'password-strength-bar ' + r.cls;
+        pwText.textContent = '密碼強度：' + r.text;
+      });
+    }
+
+    /* --- 登入 --- */
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = loginForm.querySelector('.login-submit');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('loginUser').value.trim(),
+            password: document.getElementById('loginPass').value,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showSuccess('登入成功，正在跳轉...');
+          setTimeout(() => { window.location.href = '/'; }, 600);
+        } else {
+          showError(data.msg || '登入失敗');
+        }
+      } catch { showError('無法連線伺服器'); }
+      btn.disabled = false;
+    });
+
+    /* --- 註冊送出 --- */
+    document.getElementById('regSubmitBtn').addEventListener('click', async () => {
+      const displayName = document.getElementById('regName').value.trim();
+      const role = document.getElementById('regRole').value;
+      const captcha = document.getElementById('regCaptcha').value.trim();
+      const agree = document.getElementById('regAgree').checked;
+
+      if (!displayName) { showError('請輸入您的姓名'); return; }
+      if (!role) { showError('請選擇您的職業身份'); return; }
+      if (!captcha) { showError('請輸入驗證碼'); return; }
+      if (!agree) { showError('請同意服務條款及隱私權政策'); return; }
+
+      const btn = document.getElementById('regSubmitBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('regUser').value.trim(),
+            password: document.getElementById('regPass').value,
+            display_name: document.getElementById('regName').value.trim(),
+            email: document.getElementById('regEmail').value.trim(),
+            phone: document.getElementById('regPhone').value.trim(),
+            role: document.getElementById('regRole').value,
+            clinic_name: document.getElementById('regClinic').value.trim(),
+            license_number: document.getElementById('regLicense').value.trim(),
+            captcha,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showSuccess('註冊成功，正在跳轉...');
+          setTimeout(() => { window.location.href = '/'; }, 600);
+        } else {
+          showError(data.msg || '註冊失敗');
+          loadCaptcha();
+        }
+      } catch { showError('無法連線伺服器'); loadCaptcha(); }
+      btn.disabled = false;
+    });
+  })();
+  </script>
+</body>
+</html>

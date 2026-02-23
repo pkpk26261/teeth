@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idensol Chroma - 專案詳情</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/project-detail.css">
+  <link rel="stylesheet" href="css/ui-components.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <script src="js/auth.js" defer></script>
+  <script src="js/mobile.js" defer></script>
+</head>
+<body class="dashboard-body">
+  <!-- ===== 頂部導航列 ===== -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <a href="/" class="logo">
+        <span class="logo-icon">🦷</span>
+        <span class="logo-text">Idensol Chroma</span>
+      </a>
+      <nav class="main-nav">
+        <div class="nav-project-selector" id="navProjectSelector">
+          <button class="nav-project-btn" id="navProjectBtn">
+            <span class="nav-project-btn-icon">📂</span>
+            <span class="nav-project-btn-text">選擇專案</span>
+            <span class="nav-project-btn-arrow">▾</span>
+            <span class="nav-project-btn-clear" title="取消選擇" style="display:none">✕</span>
+          </button>
+          <div class="nav-project-dropdown">
+            <div class="nav-project-dropdown-header">
+              <div class="nav-project-search-wrap">
+                <svg class="nav-project-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="nav-project-search" type="text" placeholder="搜尋專案…" />
+              </div>
+            </div>
+            <div class="nav-project-list"></div>
+          </div>
+        </div>
+        <a href="/" class="nav-item active">我的項目</a>
+        <div class="nav-dropdown" id="navRecipeTakeout">
+          <button class="nav-item">食譜外帶 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">輕量版 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="recipe-dentin">1. 牙本質與釉質</button>
+                <button class="nav-dropdown-item" data-feature="recipe-staining">2. 染色與釉面</button>
+              </div>
+            </div>
+            <button class="nav-dropdown-item" data-feature="recipe-unified">一體化配方</button>
+            <button class="nav-dropdown-item" data-feature="ai-color-guide">AI色階指南 <span class="nav-beta-badge">Beta</span></button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navMastery">
+          <button class="nav-item">精通之道 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu nav-dropdown-menu-wide">
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">模型製作 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-resin">1. 樹酯配方</button>
+                <button class="nav-dropdown-item" data-feature="mastery-3d-stain">2. 3D列印模型染色</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-fl-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-wash">2. 清洗燒製</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-fl-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">微層堆疊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-ml-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-staining">2. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-internal">3. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-ml-enamel">4. 琺瑯質</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">全單塊 <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-mono-structure">1. 結構</button>
+                <button class="nav-dropdown-item" data-feature="mastery-mono-staining">2. 染色工作室</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub"><span>牙齦 <span class="nav-beta-badge">Beta</span></span> <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-stain">1. 染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-gingiva-ceramic">2. 陶瓷</button>
+              </div>
+            </div>
+            <div class="nav-dropdown-sub">
+              <button class="nav-dropdown-item nav-has-sub">金屬烤瓷冠 (PFM) <span class="sub-arrow">▸</span></button>
+              <div class="nav-sub-menu">
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque">1. 不透明層</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-opaque-stain">2. 不透明層染色</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-dentin">3. 牙本質</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-internal">4. 內部效果</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-staining">5. 染色工作室</button>
+                <button class="nav-dropdown-item" data-feature="mastery-pfm-enamel">6. 琺瑯質</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navStaining">
+          <button class="nav-item">染色工作室 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="stain-monolithic">整體式/色彩校正</button>
+            <button class="nav-dropdown-item" data-feature="stain-shade-model">色調模型/樹樁色調</button>
+            <button class="nav-dropdown-item" data-feature="stain-wash-fire">清洗燒製</button>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navDigitalTryOn">
+          <button class="nav-item">數位試戴 <span class="dropdown-arrow">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <button class="nav-dropdown-item" data-feature="color-detection">色彩檢測</button>
+            <button class="nav-dropdown-item" data-feature="ceramic-studio">陶瓷工作室</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切換深色/淺色模式">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="user-avatar" title="使用者選單">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 主內容區 ===== -->
+  <main class="dashboard-main">
+    <div class="dashboard-container">
+      <!-- 麵包屑導航 -->
+      <nav class="breadcrumb">
+        <a href="/" class="breadcrumb-link">專案</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current" id="breadcrumbProjectName">test003</span>
+      </nav>
+
+      <!-- 專案標題區 -->
+      <div class="project-detail-header">
+        <div class="project-info">
+          <div class="project-title-row">
+            <h1 class="project-title" id="projectTitle">test003</h1>
+            <span class="owner-badge">Owner</span>
+            <div class="status-dropdown" id="statusDropdown">
+              <button class="status-btn active-status" id="statusBtn">
+                <span class="status-dot"></span>
+                <span class="status-label">Active</span>
+                <span class="dropdown-arrow">▾</span>
+              </button>
+            </div>
+            <button class="btn ghost icon-btn more-options-btn" title="更多選項">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="2"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+                <circle cx="12" cy="19" r="2"></circle>
+              </svg>
+            </button>
+          </div>
+          <div class="project-meta">
+            <span class="meta-label">牙醫:</span>
+            <span class="meta-value" id="projectDentist">—</span>
+          </div>
+        </div>
+        <div class="project-actions">
+          <button class="btn ghost share-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            分享專案
+          </button>
+          <button class="btn primary add-image-btn" id="addImageBtn">
+            <span class="plus-icon">+</span>
+            新增圖片
+          </button>
+        </div>
+      </div>
+
+      <!-- 標籤頁 -->
+      <div class="detail-tabs">
+        <div class="tab-group-underline">
+          <button class="tab-btn-underline active" data-tab="images">圖片</button>
+          <button class="tab-btn-underline" data-tab="recipes">已保存配方</button>
+          <button class="tab-btn-underline" data-tab="description">描述</button>
+        </div>
+      </div>
+
+      <!-- 圖片標籤內容 -->
+      <div class="tab-content active" id="tabImages">
+        <!-- 工具列 -->
+        <div class="images-toolbar">
+          <div class="toolbar-left-actions">
+            <button class="btn ghost select-all-btn" id="selectAllImages">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              SELECT ALL
+            </button>
+          </div>
+          <div class="toolbar-right-actions">
+            <div class="sort-dropdown">
+              <button class="sort-btn">
+                最新上傳
+                <span class="dropdown-arrow">▾</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 圖片網格（由 JavaScript 動態渲染） -->
+        <div class="images-grid" id="imagesGrid">
+        </div>
+
+        <!-- 空狀態 -->
+        <div class="empty-state hidden" id="emptyImages">
+          <div class="empty-icon">🖼️</div>
+          <div class="empty-title">沒有圖片</div>
+          <div class="empty-text">點擊「+ 新增圖片」來上傳您的第一張圖片</div>
+        </div>
+      </div>
+
+      <!-- 已保存配方標籤內容 -->
+      <div class="tab-content" id="tabRecipes">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">沒有已保存配方</div>
+          <div class="empty-text">當您保存顏色配方時，它們會顯示在這裡</div>
+        </div>
+      </div>
+
+      <!-- 描述標籤內容 -->
+      <div class="tab-content" id="tabDescription">
+        <div class="description-editor">
+          <textarea class="description-textarea" id="projectDescription" placeholder="新增專案描述..."></textarea>
+          <div class="description-actions">
+            <button class="btn primary save-description-btn" id="saveDescriptionBtn">儲存描述</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 右下角新增按鈕 -->
+  <button class="add-fab" id="addFab" title="新增圖片">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  </button>
+
+  <!-- 聊天按鈕 -->
+  <button class="chat-fab" title="開啟聊天">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span>Chat</span>
+  </button>
+
+  <!-- 隱藏的檔案輸入 -->
+  <input type="file" id="imageFileInput" accept="image/*" multiple style="display:none">
+
+  <!-- ===== 專案編輯 Modal ===== -->
+  <div class="modal-overlay" id="projectEditModal">
+    <div class="modal-dialog-box">
+      <div class="modal-header-bar">
+        <h3 class="modal-title">編輯專案</h3>
+        <button class="modal-close-btn" id="projectEditCloseBtn">&times;</button>
+      </div>
+      <form id="projectEditForm" class="modal-form">
+        <div class="form-field">
+          <label for="editProjectName">專案名稱 <span class="required-mark">*</span></label>
+          <input type="text" id="editProjectName" placeholder="請輸入專案名稱" required autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="editDentistName">牙醫姓名</label>
+          <input type="text" id="editDentistName" placeholder="請輸入牙醫姓名" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="editProjectDescription">描述</label>
+          <textarea id="editProjectDescription" rows="3" placeholder="請輸入專案描述"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn ghost" id="projectEditCancelBtn">取消</button>
+          <button type="submit" class="btn primary">儲存變更</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== 分享 Modal ===== -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal-dialog-box share-dialog">
+      <div class="modal-header-bar">
+        <h3 class="modal-title" id="shareModalTitle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -3px; margin-right: 6px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          分享專案
+        </h3>
+        <button class="modal-close-btn" id="shareModalCloseBtn">&times;</button>
+      </div>
+      <div class="share-modal-body">
+        <!-- 搜尋使用者 -->
+        <div class="share-search-section">
+          <label class="share-label">新增分享對象</label>
+          <div class="share-search-row">
+            <div class="share-search-input-wrap">
+              <svg class="share-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="shareUserSearch" class="share-search-input" placeholder="輸入帳號或姓名搜尋..." autocomplete="off">
+            </div>
+            <select id="sharePermission" class="share-permission-select">
+              <option value="view">僅檢視</option>
+              <option value="edit">可編輯</option>
+            </select>
+          </div>
+          <!-- 搜尋結果下拉 -->
+          <div class="share-search-results" id="shareSearchResults"></div>
+        </div>
+
+        <!-- 目前分享清單 -->
+        <div class="share-list-section">
+          <label class="share-label">已分享的對象</label>
+          <div class="share-current-list" id="shareCurrentList">
+            <div class="share-empty-state">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" opacity="0.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>尚未分享給任何人</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions share-modal-actions">
+        <button type="button" class="btn ghost" id="shareModalCancelBtn">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui-components.js"></script>
+  <script src="js/project-detail.js"></script>
+</body>
+</html>

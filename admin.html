@@ -1,0 +1,2810 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Idensol Chroma - 管理後台</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/ui-components.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <script src="js/auth.js" defer></script>
+  <script src="js/mobile.js" defer></script>
+  <style>
+    /* ===== 管理後台佈局 ===== */
+    .admin-layout {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* 側邊欄 */
+    .admin-sidebar {
+      width: 240px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      flex-shrink: 0;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+    .admin-sidebar-title {
+      padding: 0 20px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: all .15s;
+      border-left: 3px solid transparent;
+    }
+    .admin-nav-item:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+    .admin-nav-item.active {
+      background: var(--bg-hover);
+      color: var(--primary);
+      border-left-color: var(--primary);
+      font-weight: 600;
+    }
+    .admin-nav-item svg { flex-shrink: 0; }
+
+    /* 主內容 */
+    .admin-main {
+      flex: 1;
+      padding: 28px 32px;
+      overflow-x: auto;
+    }
+    .admin-page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .admin-page-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* 統計卡片 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+    .stat-card-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .stat-card-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stat-card-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* 面板 */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* 搜尋列 */
+    .admin-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .admin-search {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 9px 14px 9px 36px;
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .admin-search:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .admin-search-wrap {
+      position: relative;
+      flex: 0 0 260px;
+      width: 260px;
+    }
+    .admin-search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .admin-badge-info {
+      background: var(--info-bg);
+      color: var(--info-text);
+      margin-left: 0;
+      margin-right: auto;
+    }
+    .admin-badge-success {
+      background: var(--success-bg);
+      color: var(--success-text, var(--success));
+    }
+    .admin-badge-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+    .admin-badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    /* 表格 */
+    .admin-table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .admin-table th {
+      background: var(--bg-subtle);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .admin-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: var(--bg-hover); }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-cell-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .user-cell-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .user-cell-info { display: flex; flex-direction: column; }
+    .user-cell-name { font-weight: 600; color: var(--text); }
+    .user-cell-username { font-size: 11px; color: var(--text-muted); }
+
+    /* 操作按鈕 */
+    .admin-action-btn {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .admin-action-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .admin-action-btn.danger:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .admin-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Modal */
+    .admin-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .admin-modal-overlay.show {
+      display: flex;
+    }
+    .admin-modal {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px;
+      width: 560px;
+      max-width: 95vw;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .admin-modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-modal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+    .admin-modal-field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .admin-modal-field input,
+    .admin-modal-field select {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 9px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .admin-modal-field input:focus,
+    .admin-modal-field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .admin-modal-field input:read-only {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .admin-modal-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .admin-modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    .admin-modal-btn {
+      padding: 9px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .admin-modal-btn:hover { opacity: 0.9; }
+    .admin-modal-btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+    }
+    .admin-modal-btn-cancel {
+      background: var(--bg-subtle);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .admin-modal-btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    [data-theme="dark"] .admin-modal-btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+    [data-theme="dark"] .admin-modal-btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* 密碼顯示區 */
+    .pw-display {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+    .pw-display-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pw-display-label {
+      font-weight: 600;
+      color: var(--text-muted);
+      min-width: 80px;
+      font-family: inherit;
+    }
+    .pw-display-value {
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    /* Toast */
+    .admin-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all .3s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .admin-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .admin-toast.success { background: var(--success); }
+    .admin-toast.error { background: var(--danger); }
+
+    /* 無資料 */
+    .admin-empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* RWD */
+    @media (max-width: 768px) {
+      .admin-sidebar { display: none; }
+      .admin-main { padding: 16px 14px; padding-bottom: 80px; }
+      .admin-modal-row { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+      #viewLoginHistoryBtn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* ---- 底部標籤列 ---- */
+      .admin-mobile-tabbar {
+        display: flex !important;
+      }
+
+      /* ---- 頁面標題適配 ---- */
+      .admin-page-title { font-size: 18px; }
+      .admin-page-subtitle { font-size: 12px; margin-bottom: 16px; }
+
+      /* ---- 統計卡片適配 ---- */
+      .stat-card { padding: 14px; border-radius: 10px; }
+      .stat-card-value { font-size: 22px; }
+
+      /* ---- 工具列適配 ---- */
+      .admin-toolbar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .admin-search-wrap {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+      }
+      .admin-search {
+        width: 100%;
+      }
+
+      /* ---- 表格適配：使用者 ---- */
+      .admin-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -14px;
+        padding: 0 14px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      /* 使用者表格 → 卡片式 */
+      #usersTable thead { display: none; }
+      #usersTable,
+      #usersTable tbody {
+        display: block;
+        width: 100%;
+      }
+      #usersTable tr {
+        display: block;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px var(--shadow-color);
+      }
+      #usersTable td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0;
+        border: none;
+        font-size: 13px;
+      }
+      #usersTable td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--text-muted);
+        min-width: 70px;
+        flex-shrink: 0;
+      }
+      #usersTable td:first-child {
+        padding-bottom: 8px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+      }
+      #usersTable td:first-child::before { display: none; }
+      #usersTable td:last-child {
+        padding-top: 8px;
+        margin-top: 4px;
+        border-top: 1px solid var(--border);
+        justify-content: flex-end;
+      }
+      #usersTable td:last-child::before { display: none; }
+
+      /* 專案表格 → 卡片式 */
+      #projectsTable thead { display: none; }
+      #projectsTable,
+      #projectsTable tbody {
+        display: block;
+        width: 100%;
+      }
+      #projectsTable tr {
+        display: block;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px var(--shadow-color);
+      }
+      #projectsTable td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0;
+        border: none;
+        font-size: 13px;
+      }
+      #projectsTable td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--text-muted);
+        min-width: 70px;
+        flex-shrink: 0;
+      }
+      #projectsTable td:first-child {
+        padding-bottom: 8px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+      }
+      #projectsTable td:first-child::before { display: none; }
+      #projectsTable td:last-child {
+        padding-top: 8px;
+        margin-top: 4px;
+        border-top: 1px solid var(--border);
+        justify-content: flex-end;
+      }
+      #projectsTable td:last-child::before { display: none; }
+
+      /* 擁有者欄位：名稱與帳號靠在一起，右對齊 */
+      #projectsTable .owner-info {
+        text-align: right;
+        line-height: 1.4;
+      }
+
+      /* ---- 登入紀錄表格 → 卡片式 ---- */
+      #loginHistoryTable thead { display: none; }
+      #loginHistoryTable,
+      #loginHistoryTable tbody {
+        display: block;
+        width: 100%;
+      }
+      #loginHistoryTable tr {
+        display: block;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px var(--shadow-color);
+      }
+      #loginHistoryTable td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0;
+        border: none;
+        font-size: 13px;
+      }
+      #loginHistoryTable td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--text-muted);
+        min-width: 50px;
+        flex-shrink: 0;
+      }
+
+      /* ---- Modal 適配 ---- */
+      .admin-modal-overlay.show {
+        align-items: flex-end;
+      }
+      .admin-modal {
+        max-width: 100% !important;
+        width: 100% !important;
+        border-radius: 16px 16px 0 0 !important;
+        max-height: 85vh;
+        overflow-y: auto;
+        margin: 0;
+        padding: 20px 16px !important;
+      }
+      .admin-modal-actions {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .admin-modal-actions .admin-modal-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* ---- 系統設定適配 ---- */
+      .settings-row {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+      }
+      .settings-label {
+        min-width: 0;
+        flex: 1;
+      }
+      .settings-label-name {
+        font-size: 13px;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.5;
+      }
+      .settings-label-hint {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+      .settings-label-key {
+        font-size: 10px;
+      }
+      .settings-input {
+        flex: 1;
+        max-width: none;
+      }
+      .settings-input input[type="text"],
+      .settings-input input[type="number"] {
+        width: 100%;
+      }
+      .settings-save-bar {
+        bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+        padding: 14px 0 20px;
+        margin-top: 12px;
+        margin-bottom: 8px;
+      }
+
+      /* ---- 色卡管理適配 ---- */
+      .shade-toolbar {
+        flex-direction: column;
+      }
+      .shade-toolbar .admin-action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .brands-grid {
+        grid-template-columns: 1fr;
+      }
+      .brand-card-actions {
+        flex-wrap: wrap;
+      }
+      .brand-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .shade-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+      .group-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .group-card-actions {
+        width: 100%;
+      }
+
+      /* ---- 密碼資訊適配 ---- */
+      .pw-display-value {
+        word-break: break-all;
+        font-size: 11px;
+      }
+    }
+
+    /* 底部標籤列 — 預設隱藏 */
+    .admin-mobile-tabbar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(64px + env(safe-area-inset-bottom, 0px));
+      min-height: calc(64px + env(safe-area-inset-bottom, 0px));
+      max-height: calc(64px + env(safe-area-inset-bottom, 0px));
+      box-sizing: border-box;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -2px 12px var(--shadow-color);
+      z-index: 1000;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 4px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .admin-tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 0;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color .15s;
+      flex: 1;
+      max-width: 72px;
+      text-align: center;
+      line-height: 1.2;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .admin-tab-item svg {
+      display: block;
+      margin: 0 auto;
+      transition: transform .15s;
+    }
+    .admin-tab-item span {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+    .admin-tab-item.active {
+      color: var(--primary);
+    }
+    .admin-tab-item.active svg {
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-card-value { font-size: 20px; }
+      .admin-main { padding: 12px 10px; padding-bottom: 80px; }
+    }
+
+    /* ===== 系統設定面板 ===== */
+    .settings-actions-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    /* 保存設定按鈕列 */
+    .settings-save-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 0;
+      margin-top: 16px;
+      border-top: 1px solid var(--border);
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+    .settings-save-bar .unsaved-hint {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+    .settings-save-bar .unsaved-hint.show {
+      display: flex;
+    }
+    .settings-save-bar .unsaved-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+      flex-shrink: 0;
+    }
+    .settings-save-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 28px;
+      background: linear-gradient(135deg, var(--primary, #2563eb), var(--primary-dark, #1d4ed8));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      box-shadow: 0 2px 8px rgba(37,99,235,.25);
+    }
+    .settings-save-btn:hover {
+      opacity: 0.9;
+    }
+    .settings-save-btn:active {
+      transform: scale(0.97);
+    }
+    .settings-save-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .settings-save-btn svg {
+      flex-shrink: 0;
+    }
+    .settings-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .settings-category {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+    .settings-category-header {
+      padding: 14px 20px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row:hover { background: var(--bg-hover); }
+    .settings-label {
+      flex: 1;
+      min-width: 160px;
+    }
+    .settings-label-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .settings-label-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .settings-label-key {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+    .settings-input {
+      flex: 1;
+      max-width: 300px;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .settings-input input,
+    .settings-input select {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 8px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .settings-input input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      cursor: pointer;
+    }
+    .toggle-switch input {
+      display: none;
+    }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 26px;
+      transition: .3s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .3s;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--primary);
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(22px);
+    }
+
+
+    /* ===== 色卡管理面板 ===== */
+    .shade-toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .brands-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .brand-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 8px var(--shadow-color);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .brand-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px var(--shadow-color);
+    }
+    .brand-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .brand-card-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .brand-card-key {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-top: 2px;
+    }
+    .brand-card-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .brand-card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .brand-card.disabled {
+      opacity: 0.6;
+    }
+    .brand-card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .brand-card-status.active {
+      background: rgba(34,197,94,.1);
+      color: var(--success, #22c55e);
+      border-color: rgba(34,197,94,.25);
+    }
+    .brand-card-status.active:hover {
+      background: rgba(34,197,94,.18);
+    }
+    .brand-card-status.inactive {
+      background: rgba(239,68,68,.08);
+      color: var(--danger, #ef4444);
+      border-color: rgba(239,68,68,.2);
+    }
+    .brand-card-status.inactive:hover {
+      background: rgba(239,68,68,.15);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.active { background: var(--success); }
+    .status-dot.inactive { background: var(--danger); }
+
+    /* 品牌詳情面板 */
+    .brand-detail-panel {
+      margin-top: 16px;
+    }
+    .brand-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .group-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+    .group-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .group-card-header:hover {
+      background: var(--bg-hover);
+    }
+    .group-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .group-card-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .group-card-body {
+      padding: 16px 20px;
+    }
+    .shade-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    .shade-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .shade-chip:hover {
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+    .shade-swatch {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+    .shade-chip-code {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .shade-chip-name {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .add-shade-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all .15s;
+      color: var(--text-muted);
+      min-height: 90px;
+    }
+    .add-shade-chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* 色階系統 */
+    .system-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+    .system-codes-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .system-code-tag {
+      padding: 3px 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body class="dashboard-body">
+  <!-- ===== 頂部導航列 ===== -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <a href="/" class="logo">
+        <span class="logo-icon">🦷</span>
+        <span class="logo-text">Idensol Chroma</span>
+      </a>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切換深色/淺色模式">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="user-avatar" title="使用者選單">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 管理後台佈局 ===== -->
+  <div class="admin-layout">
+    <!-- 側邊欄 -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-title">管理後台</div>
+      <button class="admin-nav-item active" data-panel="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        總覽
+      </button>
+      <button class="admin-nav-item" data-panel="users">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        使用者管理
+      </button>
+      <button class="admin-nav-item" data-panel="projects">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        專案管理
+      </button>
+      <div class="admin-sidebar-title" style="margin-top:16px">系統設定</div>
+      <button class="admin-nav-item" data-panel="settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        系統設定
+      </button>
+      <button class="admin-nav-item" data-panel="shadeCards">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/><circle cx="16" cy="16" r="2"/></svg>
+        色卡管理
+      </button>
+    </aside>
+
+    <!-- 手機版底部標籤列 -->
+    <nav class="admin-mobile-tabbar" id="adminMobileTabbar">
+      <button class="admin-tab-item active" data-panel="dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>總覽</span>
+      </button>
+      <button class="admin-tab-item" data-panel="users">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>使用者</span>
+      </button>
+      <button class="admin-tab-item" data-panel="projects">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>專案</span>
+      </button>
+      <button class="admin-tab-item" data-panel="settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>設定</span>
+      </button>
+      <button class="admin-tab-item" data-panel="shadeCards">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/><circle cx="16" cy="16" r="2"/></svg>
+        <span>色卡</span>
+      </button>
+    </nav>
+
+    <!-- 主內容 -->
+    <div class="admin-main">
+
+      <!-- ▸ 總覽面板 -->
+      <div class="admin-panel active" id="panelDashboard">
+        <div class="admin-page-title">管理後台總覽</div>
+        <div class="admin-page-subtitle">系統運行狀態與關鍵指標</div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-card-label">總使用者數</div>
+            <div class="stat-card-value" id="statUsers">-</div>
+            <div class="stat-card-sub" id="statUsersWeek">本週新增 -</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">總專案數</div>
+            <div class="stat-card-value" id="statProjects">-</div>
+            <div class="stat-card-sub">不含已刪除</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">總圖片數</div>
+            <div class="stat-card-value" id="statImages">-</div>
+            <div class="stat-card-sub">所有專案圖片</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">今日註冊</div>
+            <div class="stat-card-value" id="statToday">-</div>
+            <div class="stat-card-sub">今日新增使用者</div>
+          </div>
+        </div>
+
+        <!-- 登入紀錄按鈕 -->
+        <div style="margin-top:20px">
+          <button class="admin-action-btn" id="viewLoginHistoryBtn" style="padding:10px 20px;font-size:14px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            查看登入紀錄
+          </button>
+        </div>
+      </div>
+
+      <!-- ▸ 使用者管理面板 -->
+      <div class="admin-panel" id="panelUsers">
+        <div class="admin-page-title">使用者管理</div>
+        <div class="admin-page-subtitle">管理所有註冊帳號、查看個人資料與帳號密碼</div>
+        <div class="admin-toolbar">
+          <div class="admin-search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="admin-search" type="text" id="userSearch" placeholder="搜尋帳號、姓名或郵件...">
+          </div>
+          <span class="admin-badge admin-badge-info" id="userCount">0 位使用者</span>
+          <button class="admin-action-btn" id="addUserBtn" style="margin-left:auto;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;padding:7px 16px;font-weight:600;border-radius:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            新增使用者
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>使用者</th>
+                <th>帳號</th>
+                <th>信箱</th>
+                <th>職業</th>
+                <th>專案數</th>
+                <th>註冊時間</th>
+                <th>角色</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ▸ 專案管理面板 -->
+      <div class="admin-panel" id="panelProjects">
+        <div class="admin-page-title">專案管理</div>
+        <div class="admin-page-subtitle">查看系統中所有專案的狀態與歸屬</div>
+        <div class="admin-toolbar">
+          <div class="admin-search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="admin-search" type="text" id="projectSearch" placeholder="搜尋專案名稱或擁有者...">
+          </div>
+          <span class="admin-badge admin-badge-info" id="projectCount">0 個專案</span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="projectsTable">
+            <thead>
+              <tr>
+                <th>專案名稱</th>
+                <th>擁有者</th>
+                <th>圖片數</th>
+                <th>狀態</th>
+                <th>建立時間</th>
+                <th>最後修改</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="projectsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ▸ 系統設定面板 -->
+      <div class="admin-panel" id="panelSettings">
+        <div class="admin-page-title">系統設定</div>
+        <div class="admin-page-subtitle">管理網站運行參數與功能開關</div>
+
+        <div id="settingsContainer" class="settings-grid"></div>
+        <div class="settings-save-bar" id="settingsSaveBar">
+          <span class="unsaved-hint" id="unsavedHint">
+            <span class="unsaved-dot"></span>
+            有未儲存的變更
+          </span>
+          <button class="settings-save-btn" id="saveSettingsBtn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            保存設定
+          </button>
+        </div>
+      </div>
+
+      <!-- ▸ 色卡管理面板 -->
+      <div class="admin-panel" id="panelShadeCards">
+        <div class="admin-page-title">色卡管理</div>
+        <div class="admin-page-subtitle">管理陶瓷工作室使用的品牌色卡、群組與色階</div>
+
+        <div class="shade-toolbar">
+          <button class="admin-action-btn" id="importDefaultShadesBtn" style="padding:8px 16px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            匯入預設色卡
+          </button>
+          <button class="admin-action-btn" id="importBrandJsonBtn" style="padding:8px 16px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+            匯入品牌 JSON
+          </button>
+          <input type="file" id="importBrandFileInput" accept=".json" style="display:none">
+          <button class="admin-action-btn" id="addBrandBtn" style="padding:8px 16px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            新增品牌
+          </button>
+        </div>
+
+        <!-- 品牌列表 -->
+        <div id="brandsContainer" class="brands-grid"></div>
+
+        <!-- 群組與色階管理面板 (品牌展開後顯示) -->
+        <div id="brandDetailPanel" class="brand-detail-panel" style="display:none">
+          <div class="brand-detail-header">
+            <button class="admin-action-btn" id="backToBrandsBtn">← 返回品牌列表</button>
+            <h3 id="brandDetailTitle" style="margin:0;font-size:18px;font-weight:700;color:var(--text)"></h3>
+            <button class="admin-action-btn" id="addGroupBtn" style="padding:8px 16px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              新增群組
+            </button>
+          </div>
+          <div id="groupsContainer"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 登入紀錄 Modal ===== -->
+  <div class="admin-modal-overlay" id="loginHistoryModal">
+    <div class="admin-modal" style="width:800px;max-width:95vw;">
+      <div class="admin-modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>登入紀錄</span>
+        <span class="admin-badge admin-badge-info" id="loginHistoryCount" style="margin-left:auto;font-size:11px">0 筆</span>
+      </div>
+      <div class="admin-toolbar" style="margin-bottom:12px">
+        <div class="admin-search-wrap" style="flex:1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="admin-search" type="text" id="loginHistorySearch" placeholder="搜尋帳號或名稱...">
+        </div>
+      </div>
+      <div style="max-height:60vh;overflow-y:auto;">
+        <table class="admin-table" id="loginHistoryTable">
+          <thead>
+            <tr>
+              <th>使用者</th>
+              <th>帳號</th>
+              <th>角色</th>
+              <th>IP 位址</th>
+              <th>登入時間</th>
+            </tr>
+          </thead>
+          <tbody id="loginHistoryBody"></tbody>
+        </table>
+      </div>
+      <div class="admin-modal-actions">
+        <button class="admin-modal-btn admin-modal-btn-cancel" onclick="document.getElementById('loginHistoryModal').classList.remove('show')">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 使用者詳情 Modal ===== -->
+  <div class="admin-modal-overlay" id="userModal">
+    <div class="admin-modal">
+      <div class="admin-modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="modalTitle">使用者詳情</span>
+      </div>
+
+      <!-- 帳號密碼資訊 -->
+      <div class="pw-display" id="modalPwDisplay">
+        <div class="pw-display-row">
+          <span class="pw-display-label">帳號：</span>
+          <span class="pw-display-value" id="modalPwUser">-</span>
+        </div>
+        <div class="pw-display-row">
+          <span class="pw-display-label">密碼 Hash：</span>
+          <span class="pw-display-value" id="modalPwHash">-</span>
+        </div>
+        <div class="pw-display-row">
+          <span class="pw-display-label">Salt：</span>
+          <span class="pw-display-value" id="modalPwSalt">-</span>
+        </div>
+      </div>
+
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>姓名</label>
+          <input type="text" id="modalDisplayName">
+        </div>
+        <div class="admin-modal-field">
+          <label>電子郵件</label>
+          <input type="email" id="modalEmail">
+        </div>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>電話</label>
+          <input type="tel" id="modalPhone">
+        </div>
+        <div class="admin-modal-field">
+          <label>職業身份</label>
+          <select id="modalRole">
+            <option value="">未設定</option>
+            <option value="dentist">牙醫師</option>
+            <option value="technician">牙技師</option>
+            <option value="assistant">牙醫助理</option>
+            <option value="student">學生</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>診所 / 技工所名稱</label>
+          <input type="text" id="modalClinic">
+        </div>
+        <div class="admin-modal-field">
+          <label>證書字號</label>
+          <input type="text" id="modalLicense">
+        </div>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>管理員權限</label>
+          <select id="modalIsAdmin">
+            <option value="0">一般使用者</option>
+            <option value="1">管理員</option>
+          </select>
+        </div>
+        <div class="admin-modal-field">
+          <label>重設密碼（留空不修改）</label>
+          <input type="text" id="modalNewPassword" placeholder="輸入新密碼">
+        </div>
+      </div>
+      <input type="hidden" id="modalUserId">
+
+      <div class="admin-modal-actions">
+        <button class="admin-modal-btn admin-modal-btn-danger" id="modalDeleteBtn">刪除帳號</button>
+        <button class="admin-modal-btn admin-modal-btn-cancel" id="modalCancelBtn">取消</button>
+        <button class="admin-modal-btn admin-modal-btn-primary" id="modalSaveBtn">儲存變更</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ===== 新增使用者 Modal ===== -->
+  <div class="admin-modal-overlay" id="addUserModal">
+    <div class="admin-modal">
+      <div class="admin-modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        <span>新增使用者</span>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>帳號 <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="addUsername" placeholder="至少 3 個字元">
+        </div>
+        <div class="admin-modal-field">
+          <label>密碼 <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="addPassword" placeholder="至少 6 個字元">
+        </div>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>姓名</label>
+          <input type="text" id="addDisplayName" placeholder="使用者顯示名稱">
+        </div>
+        <div class="admin-modal-field">
+          <label>電子郵件</label>
+          <input type="email" id="addEmail" placeholder="email@example.com">
+        </div>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>電話</label>
+          <input type="tel" id="addPhone" placeholder="聯絡電話">
+        </div>
+        <div class="admin-modal-field">
+          <label>職業身份</label>
+          <select id="addRole">
+            <option value="">未設定</option>
+            <option value="dentist">牙醫師</option>
+            <option value="technician">牙技師</option>
+            <option value="assistant">牙醫助理</option>
+            <option value="student">學生</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>診所 / 技工所名稱</label>
+          <input type="text" id="addClinic" placeholder="診所名稱">
+        </div>
+        <div class="admin-modal-field">
+          <label>證書字號</label>
+          <input type="text" id="addLicense" placeholder="證書字號">
+        </div>
+      </div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>管理員權限</label>
+          <select id="addIsAdmin">
+            <option value="0">一般使用者</option>
+            <option value="1">管理員</option>
+          </select>
+        </div>
+        <div class="admin-modal-field"></div>
+      </div>
+      <div class="admin-modal-actions">
+        <button class="admin-modal-btn admin-modal-btn-cancel" id="addUserCancelBtn">取消</button>
+        <button class="admin-modal-btn admin-modal-btn-primary" id="addUserSubmitBtn">建立帳號</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 品牌 Modal ===== -->
+  <div class="admin-modal-overlay" id="brandModal">
+    <div class="admin-modal" style="width:420px">
+      <div class="admin-modal-title" id="brandModalTitle">新增品牌</div>
+      <div class="admin-modal-field">
+        <label>品牌代碼（英文，用於系統識別）</label>
+        <input type="text" id="brandKey" placeholder="例如：vita-classical">
+      </div>
+      <div class="admin-modal-field">
+        <label>品牌名稱</label>
+        <input type="text" id="brandName" placeholder="例如：VITA Classical">
+      </div>
+      <input type="hidden" id="brandEditId">
+      <div class="admin-modal-actions">
+        <button class="admin-modal-btn admin-modal-btn-cancel" onclick="document.getElementById('brandModal').classList.remove('show')">取消</button>
+        <button class="admin-modal-btn admin-modal-btn-primary" id="brandModalSaveBtn">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 群組 Modal ===== -->
+  <div class="admin-modal-overlay" id="groupModal">
+    <div class="admin-modal" style="width:420px">
+      <div class="admin-modal-title" id="groupModalTitle">新增群組</div>
+      <div class="admin-modal-field">
+        <label>群組名稱</label>
+        <input type="text" id="groupTitle" placeholder="例如：A 系列（紅棕色調）">
+      </div>
+      <input type="hidden" id="groupEditId">
+      <input type="hidden" id="groupBrandId">
+      <div class="admin-modal-actions">
+        <button class="admin-modal-btn admin-modal-btn-cancel" onclick="document.getElementById('groupModal').classList.remove('show')">取消</button>
+        <button class="admin-modal-btn admin-modal-btn-primary" id="groupModalSaveBtn">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 色階 Modal ===== -->
+  <div class="admin-modal-overlay" id="shadeModal">
+    <div class="admin-modal" style="width:480px">
+      <div class="admin-modal-title" id="shadeModalTitle">新增色階</div>
+      <div class="admin-modal-row">
+        <div class="admin-modal-field">
+          <label>色階代碼</label>
+          <input type="text" id="shadeCode" placeholder="例如：A1">
+        </div>
+        <div class="admin-modal-field">
+          <label>色階名稱</label>
+          <input type="text" id="shadeName" placeholder="例如：淺紅棕">
+        </div>
+      </div>
+      <div class="admin-modal-field">
+        <label>HEX 色碼</label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="color" id="shadeColorPicker" value="#E8D8C4" style="width:48px;height:36px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--input-bg)">
+          <input type="text" id="shadeHex" value="#E8D8C4" style="flex:1;padding:8px 12px;border:1px solid var(--input-border);border-radius:8px;background:var(--input-bg);color:var(--text);font-size:13px;font-family:monospace">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="admin-modal-field">
+          <label>L* (明度)</label>
+          <input type="number" id="shadeLabL" step="0.1" placeholder="0~100">
+        </div>
+        <div class="admin-modal-field">
+          <label>a* (紅綠)</label>
+          <input type="number" id="shadeLabA" step="0.1" placeholder="-128~127">
+        </div>
+        <div class="admin-modal-field">
+          <label>b* (黃藍)</label>
+          <input type="number" id="shadeLabB" step="0.1" placeholder="-128~127">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+        <span style="font-size:12px;color:var(--text-muted)">預覽：</span>
+        <div id="shadePreview" style="width:60px;height:36px;border-radius:8px;border:1px solid var(--border);background:#E8D8C4"></div>
+      </div>
+      <input type="hidden" id="shadeEditId">
+      <input type="hidden" id="shadeGroupId">
+      <div class="admin-modal-actions">
+        <button class="admin-modal-btn admin-modal-btn-danger" id="shadeDeleteBtn" style="display:none">刪除</button>
+        <button class="admin-modal-btn admin-modal-btn-cancel" onclick="document.getElementById('shadeModal').classList.remove('show')">取消</button>
+        <button class="admin-modal-btn admin-modal-btn-primary" id="shadeModalSaveBtn">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="admin-toast" id="adminToast"></div>
+
+  <script>
+  (function() {
+    /* === 主題 === */
+    const saved = localStorage.getItem('idensol-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('idensol-theme', next);
+    });
+
+    /* === 權限檢查 === */
+    let currentUsername = '';
+    async function checkAdmin() {
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+        if (!data.logged_in) { window.location.href = '/login'; return; }
+        if (!data.is_admin) { window.location.href = '/'; return; }
+        currentUsername = data.username || '';
+      } catch {
+        window.location.href = '/login';
+      }
+    }
+    checkAdmin();
+
+    /* === Toast === */
+    const toast = document.getElementById('adminToast');
+    function showToast(msg, type = 'success') {
+      toast.textContent = msg;
+      toast.className = 'admin-toast show ' + type;
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    /* === 側邊欄導航 === */
+    const navItems = document.querySelectorAll('.admin-nav-item');
+    const tabItems = document.querySelectorAll('.admin-tab-item');
+    const _panelLoaded = {};
+
+    function switchPanel(key, sourceItems) {
+      // 同步側邊欄 + 底部標籤列 active 狀態
+      navItems.forEach(n => {
+        n.classList.toggle('active', n.dataset.panel === key);
+      });
+      tabItems.forEach(t => {
+        t.classList.toggle('active', t.dataset.panel === key);
+      });
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById('panel' + capitalize(key));
+      if (panel) panel.classList.add('active');
+      // lazy load — 只在首次切換時載入
+      if (key === 'dashboard') {
+        loadStats();
+      }
+      if (!_panelLoaded[key]) {
+        _panelLoaded[key] = true;
+        if (key === 'users') loadUsers();
+        if (key === 'projects') loadProjects();
+        if (key === 'settings') loadSettings();
+        if (key === 'shadeCards') loadBrands();
+      }
+    }
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => switchPanel(item.dataset.panel));
+    });
+    tabItems.forEach(item => {
+      item.addEventListener('click', () => switchPanel(item.dataset.panel));
+    });
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    /* === 角色對照表 === */
+    const roleMap = {
+      dentist: '牙醫師', technician: '牙技師', assistant: '牙醫助理',
+      student: '學生', other: '其他'
+    };
+
+    /* === 載入統計 === */
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        const data = await res.json();
+        if (!data.ok) return;
+        const s = data.stats;
+        document.getElementById('statUsers').textContent = s.total_users;
+        document.getElementById('statProjects').textContent = s.total_projects;
+        document.getElementById('statImages').textContent = s.total_images;
+        document.getElementById('statToday').textContent = s.today_users;
+        document.getElementById('statUsersWeek').textContent = '本週新增 ' + s.week_users;
+      } catch { /* ignore */ }
+    }
+    loadStats();
+
+    /* === 登入紀錄 === */
+    let allLoginRecords = [];
+
+    document.getElementById('viewLoginHistoryBtn').addEventListener('click', async () => {
+      document.getElementById('loginHistoryModal').classList.add('show');
+      document.getElementById('loginHistoryBody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">載入中...</td></tr>';
+      try {
+        const res = await fetch('/api/admin/login-history?limit=500');
+        const data = await res.json();
+        if (!data.ok) return;
+        allLoginRecords = data.records;
+        renderLoginHistory(allLoginRecords);
+      } catch { document.getElementById('loginHistoryBody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">無法載入資料</td></tr>'; }
+    });
+
+    document.getElementById('loginHistorySearch').addEventListener('input', () => {
+      const q = document.getElementById('loginHistorySearch').value.trim().toLowerCase();
+      if (!q) { renderLoginHistory(allLoginRecords); return; }
+      renderLoginHistory(allLoginRecords.filter(r =>
+        (r.username || '').toLowerCase().includes(q) ||
+        (r.display_name || '').toLowerCase().includes(q) ||
+        (r.ip_address || '').toLowerCase().includes(q)
+      ));
+    });
+
+    document.getElementById('loginHistoryModal').addEventListener('click', (e) => {
+      if (e.target.id === 'loginHistoryModal') e.target.classList.remove('show');
+    });
+
+    function renderLoginHistory(records) {
+      const tbody = document.getElementById('loginHistoryBody');
+      document.getElementById('loginHistoryCount').textContent = records.length + ' 筆';
+      if (!records.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">尚無登入紀錄</td></tr>';
+        return;
+      }
+      tbody.innerHTML = records.map(r => {
+        const roleBadge = r.username === 'admin'
+          ? '<span class="admin-badge admin-badge-danger" style="font-size:10px">擁有者</span>'
+          : r.is_admin
+            ? '<span class="admin-badge admin-badge-warning" style="font-size:10px">管理員</span>'
+            : '<span class="admin-badge admin-badge-info" style="font-size:10px">使用者</span>';
+        const dt = r.login_at ? new Date(r.login_at) : null;
+        const timeStr = dt ? dt.toLocaleString('zh-TW', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '-';
+        return `<tr>
+          <td data-label="使用者">${esc(r.display_name || r.username)}</td>
+          <td data-label="帳號">${esc(r.username)}</td>
+          <td data-label="角色">${roleBadge}</td>
+          <td data-label="IP">${esc(r.ip_address || '-')}</td>
+          <td data-label="時間">${timeStr}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* === 使用者管理 === */
+    let allUsers = [];
+
+    async function loadUsers(search = '') {
+      try {
+        const qs = search ? '?search=' + encodeURIComponent(search) : '';
+        const res = await fetch('/api/admin/users' + qs);
+        const data = await res.json();
+        if (!data.ok) return;
+        allUsers = data.users;
+        renderUsers(allUsers);
+      } catch { /* ignore */ }
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      document.getElementById('userCount').textContent = users.length + ' 位使用者';
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="admin-empty">沒有找到使用者</td></tr>';
+        return;
+      }
+      tbody.innerHTML = users.map(u => {
+        const initial = (u.display_name || u.username || '?').charAt(0).toUpperCase();
+        const roleName = roleMap[u.role] || u.role || '未設定';
+        const date = u.created_at ? new Date(u.created_at).toLocaleDateString('zh-TW') : '-';
+        const adminBadge = u.username === 'admin'
+          ? '<span class="admin-badge" style="background:#dbeafe;color:#1e40af">擁有者</span>'
+          : u.is_admin
+            ? '<span class="admin-badge admin-badge-warning">管理員</span>'
+            : '<span class="admin-badge admin-badge-success">一般</span>';
+        const avatarContent = u.has_avatar
+          ? `<img src="/api/users/${encodeURIComponent(u.username)}/avatar" alt="" onerror="this.style.display='none';this.parentElement.textContent='${initial}'">`
+          : initial;
+        return `<tr data-uid="${u.id}">
+          <td>
+            <div class="user-cell">
+              <div class="user-cell-avatar">${avatarContent}</div>
+              <div class="user-cell-info">
+                <span class="user-cell-name">${esc(u.display_name || '-')}</span>
+              </div>
+            </div>
+          </td>
+          <td data-label="帳號"><span class="user-cell-username">@${esc(u.username)}</span></td>
+          <td data-label="信箱">${esc(u.email || '-')}</td>
+          <td data-label="職業">${esc(roleName)}</td>
+          <td data-label="專案數">${u.project_count}</td>
+          <td data-label="註冊時間">${date}</td>
+          <td data-label="角色">${adminBadge}</td>
+          <td>
+            <div class="admin-actions">
+              <button class="admin-action-btn" onclick="openUserModal(${u.id})">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                詳情
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function esc(s) {
+      if (s == null) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+    function escAttr(s) {
+      if (s == null) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // 搜尋
+    let searchTimer;
+    document.getElementById('userSearch').addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => loadUsers(e.target.value), 300);
+    });
+
+    /* === 使用者 Modal === */
+    const modal = document.getElementById('userModal');
+
+    window.openUserModal = function(userId) {
+      const u = allUsers.find(x => x.id === userId);
+      if (!u) return;
+      document.getElementById('modalTitle').textContent = '使用者詳情 — @' + u.username;
+      document.getElementById('modalUserId').value = u.id;
+      document.getElementById('modalPwUser').textContent = u.username;
+      document.getElementById('modalPwHash').textContent = u.password_hash || '-';
+      document.getElementById('modalPwSalt').textContent = u.salt || '-';
+      document.getElementById('modalDisplayName').value = u.display_name || '';
+      document.getElementById('modalEmail').value = u.email || '';
+      document.getElementById('modalPhone').value = u.phone || '';
+      document.getElementById('modalRole').value = u.role || '';
+      document.getElementById('modalClinic').value = u.clinic_name || '';
+      document.getElementById('modalLicense').value = u.license_number || '';
+      document.getElementById('modalIsAdmin').value = u.is_admin ? '1' : '0';
+      document.getElementById('modalNewPassword').value = '';
+
+      // 擁有者帳號：不能刪除，不能修改管理員權限
+      const isOwner = u.username === 'admin';
+      const currentIsOwner = currentUsername === 'admin';
+      document.getElementById('modalDeleteBtn').style.display = isOwner ? 'none' : '';
+
+      // 管理員不能變更擁有者帳號的角色
+      const adminSelectEl = document.getElementById('modalIsAdmin');
+      if (isOwner) {
+        adminSelectEl.disabled = true;
+        adminSelectEl.value = '1';
+        adminSelectEl.title = currentIsOwner
+          ? '擁有者帳號的管理員權限無法移除'
+          : '管理員無法變更擁有者帳號的角色';
+      } else if (!currentIsOwner) {
+        // 非擁有者的管理員，也不能把其他使用者提升為擁有者（但可切換管理員/一般）
+        adminSelectEl.disabled = false;
+        adminSelectEl.title = '';
+      } else {
+        adminSelectEl.disabled = false;
+        adminSelectEl.title = '';
+      }
+
+      modal.classList.add('show');
+    };
+
+    document.getElementById('modalCancelBtn').addEventListener('click', () => {
+      modal.classList.remove('show');
+    });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('show');
+    });
+
+    // 儲存
+    document.getElementById('modalSaveBtn').addEventListener('click', async () => {
+      const userId = document.getElementById('modalUserId').value;
+      const body = {
+        display_name: document.getElementById('modalDisplayName').value.trim(),
+        email: document.getElementById('modalEmail').value.trim(),
+        phone: document.getElementById('modalPhone').value.trim(),
+        role: document.getElementById('modalRole').value,
+        clinic_name: document.getElementById('modalClinic').value.trim(),
+        license_number: document.getElementById('modalLicense').value.trim(),
+        is_admin: document.getElementById('modalIsAdmin').value === '1',
+      };
+      const newPw = document.getElementById('modalNewPassword').value;
+      if (newPw) body.new_password = newPw;
+
+      try {
+        const res = await fetch('/api/admin/users/' + userId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('使用者資料已更新');
+          modal.classList.remove('show');
+          loadUsers(document.getElementById('userSearch').value);
+          loadStats();
+        } else {
+          showToast(data.msg || '更新失敗', 'error');
+        }
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    // 刪除
+    document.getElementById('modalDeleteBtn').addEventListener('click', async () => {
+      const userId = document.getElementById('modalUserId').value;
+      if (!confirm('確定要刪除此使用者嗎？此操作將同時刪除該使用者的所有專案與圖片，且無法復原。')) return;
+      try {
+        const res = await fetch('/api/admin/users/' + userId, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('使用者已刪除');
+          modal.classList.remove('show');
+          loadUsers(document.getElementById('userSearch').value);
+          loadStats();
+        } else {
+          showToast(data.msg || '刪除失敗', 'error');
+        }
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    /* === 新增使用者 === */
+    const addModal = document.getElementById('addUserModal');
+
+    document.getElementById('addUserBtn').addEventListener('click', () => {
+      // 清空所有欄位
+      ['addUsername','addPassword','addDisplayName','addEmail','addPhone','addClinic','addLicense'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('addRole').value = '';
+      document.getElementById('addIsAdmin').value = '0';
+      addModal.classList.add('show');
+    });
+
+    document.getElementById('addUserCancelBtn').addEventListener('click', () => {
+      addModal.classList.remove('show');
+    });
+    addModal.addEventListener('click', (e) => {
+      if (e.target === addModal) addModal.classList.remove('show');
+    });
+
+    document.getElementById('addUserSubmitBtn').addEventListener('click', async () => {
+      const username = document.getElementById('addUsername').value.trim();
+      const password = document.getElementById('addPassword').value.trim();
+      if (!username || !password) {
+        showToast('帳號和密碼為必填欄位', 'error');
+        return;
+      }
+      if (username.length < 3) {
+        showToast('帳號至少需要 3 個字元', 'error');
+        return;
+      }
+      if (password.length < 6) {
+        showToast('密碼至少需要 6 個字元', 'error');
+        return;
+      }
+
+      const body = {
+        username,
+        password,
+        display_name: document.getElementById('addDisplayName').value.trim(),
+        email: document.getElementById('addEmail').value.trim(),
+        phone: document.getElementById('addPhone').value.trim(),
+        role: document.getElementById('addRole').value,
+        clinic_name: document.getElementById('addClinic').value.trim(),
+        license_number: document.getElementById('addLicense').value.trim(),
+        is_admin: document.getElementById('addIsAdmin').value === '1',
+      };
+
+      try {
+        const res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('使用者 ' + username + ' 已建立成功');
+          addModal.classList.remove('show');
+          loadUsers(document.getElementById('userSearch').value);
+          loadStats();
+        } else {
+          showToast(data.msg || '建立失敗', 'error');
+        }
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    /* === 專案管理 === */
+    let allProjects = [];
+
+    async function loadProjects() {
+      try {
+        const res = await fetch('/api/admin/projects');
+        const data = await res.json();
+        if (!data.ok) return;
+        allProjects = data.projects;
+        renderProjects(allProjects);
+      } catch { /* ignore */ }
+    }
+
+    function renderProjects(projects) {
+      const tbody = document.getElementById('projectsTableBody');
+      const searchVal = document.getElementById('projectSearch').value.toLowerCase();
+      const filtered = searchVal
+        ? projects.filter(p => (p.name || '').toLowerCase().includes(searchVal) || (p.owner_username || '').toLowerCase().includes(searchVal) || (p.owner_display_name || '').toLowerCase().includes(searchVal))
+        : projects;
+      document.getElementById('projectCount').textContent = filtered.length + ' 個專案';
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="admin-empty">沒有找到專案</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(p => {
+        const status = p.deleted_at
+          ? '<span class="admin-badge admin-badge-danger">已刪除</span>'
+          : '<span class="admin-badge admin-badge-success">使用中</span>';
+        const created = p.created_at ? new Date(p.created_at).toLocaleDateString('zh-TW') : '-';
+        const modified = p.modified_at ? new Date(p.modified_at).toLocaleDateString('zh-TW') : '-';
+        return `<tr>
+          <td><strong>${esc(p.name || '未命名')}</strong></td>
+          <td data-label="擁有者"><span class="owner-info">${esc(p.owner_display_name || p.owner_username || '-')} <span style="font-size:11px;color:var(--text-muted)">@${esc(p.owner_username || '')}</span></span></td>
+          <td data-label="圖片數">${p.image_count}</td>
+          <td data-label="狀態">${status}</td>
+          <td data-label="建立時間">${created}</td>
+          <td data-label="最後修改">${modified}</td>
+          <td><button class="admin-action-btn admin-del-project-btn" style="padding:5px 10px;font-size:12px;color:var(--danger,#ef4444)" data-id="${p.id}" data-name="${esc(p.name || '未命名')}">刪除</button></td>
+        </tr>`;
+      }).join('');
+
+      // 綁定刪除按鈕事件
+      tbody.querySelectorAll('.admin-del-project-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          adminDeleteProject(parseInt(btn.dataset.id), btn.dataset.name);
+        });
+      });
+    }
+
+    document.getElementById('projectSearch').addEventListener('input', () => {
+      renderProjects(allProjects);
+    });
+
+    async function adminDeleteProject(projectId, projectName) {
+      if (!confirm(`確定要永久刪除專案「${projectName}」嗎？\n此操作將同時刪除該專案的所有圖片與相關資料，且無法復原。`)) return;
+      try {
+        const res = await fetch('/api/admin/projects/' + projectId, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('專案已永久刪除');
+          loadProjects();
+          loadStats();
+        } else {
+          showToast(data.msg || '刪除失敗', 'error');
+        }
+      } catch { showToast('無法連線伺服器', 'error'); }
+    }
+
+    /* ============================================================
+       系統設定管理
+       ============================================================ */
+    const categoryLabels = {
+      general: '一般設定', security: '安全設定',
+      limits: '限制設定', custom: '自訂設定',
+      email: '郵件設定（SMTP）'
+    };
+
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/admin/settings');
+        const data = await res.json();
+        if (!data.ok) {
+          showToast(data.msg || '載入設定失敗', 'error');
+          return;
+        }
+        renderSettings(data.settings);
+      } catch {
+        showToast('無法載入系統設定', 'error');
+      }
+    }
+
+    function renderSettings(settings) {
+      const container = document.getElementById('settingsContainer');
+      // 過濾掉色彩設定（開發者設定，不在管理介面顯示）
+      settings = settings.filter(s => s.category !== 'color');
+      // 按 category 分組
+      const grouped = {};
+      settings.forEach(s => {
+        const cat = s.category || 'general';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(s);
+      });
+      let html = '';
+      for (const [cat, items] of Object.entries(grouped)) {
+        html += `<div class="settings-category">
+          <div class="settings-category-header">${esc(categoryLabels[cat] || cat)}</div>`;
+        items.forEach(s => {
+          let inputHtml;
+          if (s.field_type === 'toggle') {
+            const checked = s.setting_value === '1' ? 'checked' : '';
+            inputHtml = `<label class="toggle-switch">
+              <input type="checkbox" ${checked} data-key="${escAttr(s.setting_key)}">
+              <span class="toggle-slider"></span>
+            </label>`;
+          } else if (s.field_type === 'number') {
+            inputHtml = `<div class="settings-input"><input type="number" value="${escAttr(s.setting_value)}" data-key="${escAttr(s.setting_key)}"></div>`;
+          } else if (s.field_type === 'password') {
+            inputHtml = `<div class="settings-input" style="position:relative;display:flex;align-items:center;">
+              <input type="password" value="${escAttr(s.setting_value)}" data-key="${escAttr(s.setting_key)}" autocomplete="off" style="padding-right:36px;">
+              <button type="button" class="pw-reveal-btn" title="顯示/隱藏密碼" style="position:absolute;right:8px;background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;display:flex;align-items:center;" onclick="const inp=this.parentElement.querySelector('input');const show=inp.type==='password';inp.type=show?'text':'password';this.querySelector('.eye-on').style.display=show?'none':'';this.querySelector('.eye-off').style.display=show?'':'none';">
+                <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+              </button>
+            </div>`;
+          } else {
+            inputHtml = `<div class="settings-input"><input type="text" value="${escAttr(s.setting_value)}" data-key="${escAttr(s.setting_key)}"></div>`;
+          }
+          html += `<div class="settings-row">
+            <div class="settings-label">
+              <div class="settings-label-name">${(s.label || s.setting_key).replace(/\s*(\([^)]*\))\s*$/g, '<br><span class="settings-label-hint">$1</span>')}</div>
+              <div class="settings-label-key">${esc(s.setting_key)}</div>
+            </div>
+            ${inputHtml}
+          </div>`;
+        });
+        html += '</div>';
+      }
+      container.innerHTML = html || '<div class="admin-empty">尚無系統設定</div>';
+
+      // 記錄原始值，用於偵測變更
+      pendingSettings = {};
+      originalSettings = {};
+      container.querySelectorAll('input[data-key]').forEach(input => {
+        const key = input.dataset.key;
+        originalSettings[key] = input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value;
+        const handler = () => markSettingChanged(key, input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value);
+        if (input.type === 'checkbox') {
+          input.addEventListener('change', handler);
+        } else {
+          input.addEventListener('input', handler);
+        }
+      });
+      updateSaveBtn();
+    }
+
+    let pendingSettings = {};
+    let originalSettings = {};
+
+    function markSettingChanged(key, value) {
+      if (value === originalSettings[key]) {
+        delete pendingSettings[key];
+      } else {
+        pendingSettings[key] = value;
+      }
+      updateSaveBtn();
+    }
+
+    function updateSaveBtn() {
+      const hasChanges = Object.keys(pendingSettings).length > 0;
+      const btn = document.getElementById('saveSettingsBtn');
+      const hint = document.getElementById('unsavedHint');
+      if (btn) btn.disabled = !hasChanges;
+      if (hint) hint.classList.toggle('show', hasChanges);
+    }
+
+    async function saveAllSettings() {
+      const keys = Object.keys(pendingSettings);
+      if (keys.length === 0) return;
+      const btn = document.getElementById('saveSettingsBtn');
+      const btnIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+      if (btn) { btn.disabled = true; btn.textContent = '儲存中…'; }
+      try {
+        const res = await fetch('/api/admin/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ settings: pendingSettings })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('設定已儲存');
+          // 即時套用 & 廣播
+          for (const [key, value] of Object.entries(pendingSettings)) {
+            originalSettings[key] = value;
+            if (key === 'site_name' && value) {
+              document.title = value + ' - 管理後台';
+              const logoText = document.querySelector('.logo-text');
+              if (logoText) logoText.textContent = value;
+            }
+          }
+          try {
+            const prev = JSON.parse(sessionStorage.getItem('site_settings') || '{}');
+            Object.assign(prev, pendingSettings);
+            sessionStorage.setItem('site_settings', JSON.stringify(prev));
+            localStorage.setItem('site_settings_update', JSON.stringify(prev));
+          } catch { /* ignore */ }
+          pendingSettings = {};
+        } else {
+          showToast(data.msg || '儲存失敗', 'error');
+        }
+      } catch { showToast('無法連線伺服器', 'error'); }
+      // 恢復按鈕外觀並根據 pendingSettings 狀態更新
+      if (btn) { btn.innerHTML = btnIcon + ' 保存設定'; }
+      updateSaveBtn();
+    }
+
+    // 綁定保存按鈕事件（取代 inline onclick）
+    document.getElementById('saveSettingsBtn').addEventListener('click', saveAllSettings);
+
+
+
+    /* ============================================================
+       色卡管理 — 品牌
+       ============================================================ */
+    let allBrands = [];
+    let currentBrandId = null;
+
+    async function loadBrands() {
+      try {
+        const res = await fetch('/api/admin/shade-brands');
+        const data = await res.json();
+        if (!data.ok) return;
+        allBrands = data.brands;
+        renderBrands(allBrands);
+      } catch { /* ignore */ }
+    }
+
+    function renderBrands(brands) {
+      const container = document.getElementById('brandsContainer');
+      document.getElementById('brandDetailPanel').style.display = 'none';
+      container.style.display = '';
+      document.querySelector('.shade-toolbar').style.display = '';
+      if (!brands.length) {
+        container.innerHTML = '<div class="admin-empty" style="grid-column:1/-1">尚無色卡品牌資料。點擊「匯入預設色卡」載入系統預設資料，或手動新增品牌。</div>';
+        return;
+      }
+      container.innerHTML = brands.map(b => `
+        <div class="brand-card${b.is_active ? '' : ' disabled'}" data-brand-id="${b.id}">
+          <div class="brand-card-header">
+            <div>
+              <div class="brand-card-name">${esc(b.brand_name)}</div>
+              <div class="brand-card-key">${esc(b.brand_key)}</div>
+            </div>
+            <button class="brand-card-status ${b.is_active ? 'active' : 'inactive'}" onclick="event.stopPropagation();toggleBrand(${b.id},${b.is_active ? 'true' : 'false'},'${esc(b.brand_name)}')">
+              <span class="status-dot ${b.is_active ? 'active' : 'inactive'}"></span>
+              ${b.is_active ? '已啟用' : '已停用'}
+            </button>
+          </div>
+          <div class="brand-card-stats">
+            <span>${b.group_count} 個群組</span>
+            <span>${b.shade_count} 個色階</span>
+          </div>
+          <div class="brand-card-actions">
+            <button class="admin-action-btn" onclick="event.stopPropagation();openBrandDetail(${b.id})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              管理色階
+            </button>
+            <button class="admin-action-btn" onclick="event.stopPropagation();editBrand(${b.id})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              編輯
+            </button>
+            <button class="admin-action-btn" onclick="event.stopPropagation();exportBrand(${b.id},'${esc(b.brand_name)}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              匯出
+            </button>
+            <button class="admin-action-btn danger" onclick="event.stopPropagation();deleteBrand(${b.id},'${esc(b.brand_name)}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              刪除
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 匯出品牌
+    window.exportBrand = async function(brandId, brandName) {
+      try {
+        const res = await fetch('/api/admin/shade-brands/' + brandId + '/export');
+        const data = await res.json();
+        if (!data.ok) { showToast(data.msg || '匯出失敗', 'error'); return; }
+        const json = JSON.stringify(data.data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (data.data.brand_key || brandName) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('已匯出「' + brandName + '」');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    };
+
+    // 匯入品牌 JSON
+    document.getElementById('importBrandJsonBtn').addEventListener('click', () => {
+      document.getElementById('importBrandFileInput').click();
+    });
+    document.getElementById('importBrandFileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const jsonData = JSON.parse(text);
+        if (!jsonData.brand_key || !jsonData.brand_name) {
+          showToast('JSON 格式錯誤：缺少 brand_key 或 brand_name', 'error');
+          return;
+        }
+        if (!confirm(`確定匯入品牌「${jsonData.brand_name}」嗎？\n若已存在相同品牌代碼將會覆蓋。`)) {
+          e.target.value = '';
+          return;
+        }
+        const res = await fetch('/api/admin/shade-brands/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonData)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(data.msg);
+          loadBrands();
+        } else {
+          showToast(data.msg || '匯入失敗', 'error');
+        }
+      } catch (err) {
+        showToast('檔案讀取或解析失敗：' + err.message, 'error');
+      }
+      e.target.value = '';
+    });
+
+    // 匯入預設
+    document.getElementById('importDefaultShadesBtn').addEventListener('click', async () => {
+      if (!confirm('確定匯入系統預設色卡資料嗎？（僅在資料庫為空時可執行）')) return;
+      try {
+        const res = await fetch('/api/admin/shade-brands/import-defaults', { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) { showToast(data.msg); loadBrands(); }
+        else showToast(data.msg || '匯入失敗', 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    // 新增品牌
+    document.getElementById('addBrandBtn').addEventListener('click', () => {
+      document.getElementById('brandModalTitle').textContent = '新增品牌';
+      document.getElementById('brandKey').value = '';
+      document.getElementById('brandName').value = '';
+      document.getElementById('brandEditId').value = '';
+      document.getElementById('brandKey').readOnly = false;
+      document.getElementById('brandModal').classList.add('show');
+    });
+
+    window.editBrand = function(brandId) {
+      const b = allBrands.find(x => x.id === brandId);
+      if (!b) return;
+      document.getElementById('brandModalTitle').textContent = '編輯品牌';
+      document.getElementById('brandKey').value = b.brand_key;
+      document.getElementById('brandName').value = b.brand_name;
+      document.getElementById('brandEditId').value = b.id;
+      document.getElementById('brandKey').readOnly = true;
+      document.getElementById('brandModal').classList.add('show');
+    };
+
+    document.getElementById('brandModalSaveBtn').addEventListener('click', async () => {
+      const editId = document.getElementById('brandEditId').value;
+      const brand_key = document.getElementById('brandKey').value.trim();
+      const brand_name = document.getElementById('brandName').value.trim();
+      if (!brand_key || !brand_name) { showToast('請填寫完整資料', 'error'); return; }
+      try {
+        let res;
+        if (editId) {
+          res = await fetch('/api/admin/shade-brands/' + editId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ brand_name })
+          });
+        } else {
+          res = await fetch('/api/admin/shade-brands', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ brand_key, brand_name })
+          });
+        }
+        const data = await res.json();
+        if (data.ok) {
+          showToast(data.msg);
+          document.getElementById('brandModal').classList.remove('show');
+          loadBrands();
+        } else showToast(data.msg || '操作失敗', 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    window.deleteBrand = async function(brandId, brandName) {
+      if (!confirm(`確定刪除品牌「${brandName}」及其所有群組和色階嗎？此操作無法復原。`)) return;
+      try {
+        const res = await fetch('/api/admin/shade-brands/' + brandId, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) { showToast(data.msg); loadBrands(); }
+        else showToast(data.msg || '刪除失敗', 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    };
+
+    window.toggleBrand = async function(brandId, currentActive, brandName) {
+      const newState = !currentActive;
+      const action = newState ? '啟用' : '停用';
+      if (!confirm(`確定要${action}品牌「${brandName}」嗎？\n${newState ? '啟用後前台將可使用此品牌色卡。' : '停用後前台將無法使用此品牌色卡。'}`)) return;
+      try {
+        const res = await fetch('/api/admin/shade-brands/' + brandId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_active: newState })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(`品牌已${action}`);
+          loadBrands();
+        } else showToast(data.msg || `${action}失敗`, 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    };
+
+    /* === 品牌詳情：群組與色階 === */
+    window.openBrandDetail = async function(brandId) {
+      currentBrandId = brandId;
+      const brand = allBrands.find(x => x.id === brandId);
+      if (!brand) return;
+      document.getElementById('brandsContainer').style.display = 'none';
+      document.querySelector('.shade-toolbar').style.display = 'none';
+      document.getElementById('brandDetailPanel').style.display = '';
+      document.getElementById('brandDetailTitle').textContent = brand.brand_name + ' — 群組管理';
+      document.getElementById('groupBrandId').value = brandId;
+      await loadGroups(brandId);
+    };
+
+    document.getElementById('backToBrandsBtn').addEventListener('click', () => {
+      loadBrands();
+    });
+
+    async function loadGroups(brandId) {
+      try {
+        const res = await fetch('/api/admin/shade-brands/' + brandId + '/groups');
+        const data = await res.json();
+        if (!data.ok) return;
+        renderGroups(data.groups, brandId);
+      } catch { /* ignore */ }
+    }
+
+    function renderGroups(groups, brandId) {
+      const container = document.getElementById('groupsContainer');
+      if (!groups.length) {
+        container.innerHTML = '<div class="admin-empty">此品牌尚無群組，請新增群組後再加入色階。</div>';
+        return;
+      }
+      container.innerHTML = groups.map(g => `
+        <div class="group-card" id="groupCard${g.id}">
+          <div class="group-card-header" onclick="toggleGroupBody(${g.id})">
+            <div class="group-card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="group-chevron" id="chevron${g.id}"><polyline points="6 9 12 15 18 9"/></svg>
+              ${esc(g.title)}
+              <span class="admin-badge admin-badge-info">${g.shade_count} 色階</span>
+            </div>
+            <div class="group-card-actions">
+              <button class="admin-action-btn" onclick="event.stopPropagation();editGroup(${g.id},'${esc(g.title).replace(/'/g, "\\'")}')">編輯</button>
+              <button class="admin-action-btn danger" onclick="event.stopPropagation();deleteGroup(${g.id},'${esc(g.title).replace(/'/g, "\\'")}')">刪除</button>
+            </div>
+          </div>
+          <div class="group-card-body" id="groupBody${g.id}" style="display:none">
+            <div class="shade-grid" id="shadeGrid${g.id}">
+              <div class="admin-empty" style="grid-column:1/-1;padding:20px">載入中...</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.toggleGroupBody = async function(groupId) {
+      const body = document.getElementById('groupBody' + groupId);
+      const chevron = document.getElementById('chevron' + groupId);
+      if (body.style.display === 'none') {
+        body.style.display = '';
+        chevron.style.transform = 'rotate(180deg)';
+        await loadShades(groupId);
+      } else {
+        body.style.display = 'none';
+        chevron.style.transform = '';
+      }
+    };
+
+    async function loadShades(groupId) {
+      try {
+        const res = await fetch('/api/admin/shade-groups/' + groupId + '/shades');
+        const data = await res.json();
+        if (!data.ok) return;
+        renderShades(data.shades, groupId);
+      } catch { /* ignore */ }
+    }
+
+    function renderShades(shades, groupId) {
+      const grid = document.getElementById('shadeGrid' + groupId);
+      let html = shades.map(s => `
+        <div class="shade-chip" onclick="openShadeModal(${s.id}, ${groupId}, ${JSON.stringify(s).replace(/"/g, '&quot;')})">
+          <div class="shade-swatch" style="background:${s.hex_color}"></div>
+          <div class="shade-chip-code">${esc(s.code)}</div>
+          <div class="shade-chip-name">${esc(s.name)}</div>
+        </div>
+      `).join('');
+      html += `
+        <div class="add-shade-chip" onclick="openNewShadeModal(${groupId})">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span style="font-size:12px;margin-top:4px">新增色階</span>
+        </div>`;
+      grid.innerHTML = html;
+    }
+
+    // 群組 CRUD
+    document.getElementById('addGroupBtn').addEventListener('click', () => {
+      document.getElementById('groupModalTitle').textContent = '新增群組';
+      document.getElementById('groupTitle').value = '';
+      document.getElementById('groupEditId').value = '';
+      document.getElementById('groupModal').classList.add('show');
+    });
+
+    window.editGroup = function(groupId, title) {
+      document.getElementById('groupModalTitle').textContent = '編輯群組';
+      document.getElementById('groupTitle').value = title;
+      document.getElementById('groupEditId').value = groupId;
+      document.getElementById('groupModal').classList.add('show');
+    };
+
+    document.getElementById('groupModalSaveBtn').addEventListener('click', async () => {
+      const editId = document.getElementById('groupEditId').value;
+      const title = document.getElementById('groupTitle').value.trim();
+      const brandId = document.getElementById('groupBrandId').value || currentBrandId;
+      if (!title) { showToast('請輸入群組名稱', 'error'); return; }
+      try {
+        let res;
+        if (editId) {
+          res = await fetch('/api/admin/shade-groups/' + editId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title })
+          });
+        } else {
+          res = await fetch('/api/admin/shade-groups', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ brand_id: parseInt(brandId), title })
+          });
+        }
+        const data = await res.json();
+        if (data.ok) {
+          showToast(data.msg);
+          document.getElementById('groupModal').classList.remove('show');
+          loadGroups(currentBrandId);
+        } else showToast(data.msg || '操作失敗', 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    window.deleteGroup = async function(groupId, title) {
+      if (!confirm(`確定刪除群組「${title}」及其所有色階嗎？`)) return;
+      try {
+        const res = await fetch('/api/admin/shade-groups/' + groupId, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) { showToast(data.msg); loadGroups(currentBrandId); }
+        else showToast(data.msg || '刪除失敗', 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    };
+
+    // 色階 Modal
+    const shadeColorPicker = document.getElementById('shadeColorPicker');
+    const shadeHex = document.getElementById('shadeHex');
+    const shadePreview = document.getElementById('shadePreview');
+
+    // HEX → LAB 自動轉換
+    function hexToLab(hex) {
+      // HEX → RGB
+      const r = parseInt(hex.slice(1, 3), 16) / 255;
+      const g = parseInt(hex.slice(3, 5), 16) / 255;
+      const b = parseInt(hex.slice(5, 7), 16) / 255;
+      // sRGB linearize
+      const lin = c => c > 0.04045 ? Math.pow((c + 0.055) / 1.055, 2.4) : c / 12.92;
+      const rl = lin(r), gl = lin(g), bl = lin(b);
+      // RGB → XYZ (D65)
+      let x = (rl * 0.4124564 + gl * 0.3575761 + bl * 0.1804375) / 0.95047;
+      let y = (rl * 0.2126729 + gl * 0.7151522 + bl * 0.0721750) / 1.00000;
+      let z = (rl * 0.0193339 + gl * 0.1191920 + bl * 0.9503041) / 1.08883;
+      // XYZ → Lab
+      const f = t => t > 0.008856 ? Math.cbrt(t) : (7.787 * t) + 16 / 116;
+      const fx = f(x), fy = f(y), fz = f(z);
+      const L = (116 * fy) - 16;
+      const A = 500 * (fx - fy);
+      const B = 200 * (fy - fz);
+      return { L: Math.round(L * 10) / 10, a: Math.round(A * 10) / 10, b: Math.round(B * 10) / 10 };
+    }
+
+    function updateLabFromHex(hex) {
+      if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
+      const lab = hexToLab(hex);
+      document.getElementById('shadeLabL').value = lab.L;
+      document.getElementById('shadeLabA').value = lab.a;
+      document.getElementById('shadeLabB').value = lab.b;
+    }
+
+    shadeColorPicker.addEventListener('input', () => {
+      shadeHex.value = shadeColorPicker.value.toUpperCase();
+      shadePreview.style.background = shadeColorPicker.value;
+      updateLabFromHex(shadeColorPicker.value);
+    });
+    shadeHex.addEventListener('input', () => {
+      const val = shadeHex.value;
+      if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+        shadeColorPicker.value = val;
+        shadePreview.style.background = val;
+        updateLabFromHex(val);
+      }
+    });
+
+    window.openNewShadeModal = function(groupId) {
+      document.getElementById('shadeModalTitle').textContent = '新增色階';
+      document.getElementById('shadeCode').value = '';
+      document.getElementById('shadeName').value = '';
+      shadeHex.value = '#E8D8C4';
+      shadeColorPicker.value = '#E8D8C4';
+      shadePreview.style.background = '#E8D8C4';
+      updateLabFromHex('#E8D8C4');
+      document.getElementById('shadeEditId').value = '';
+      document.getElementById('shadeGroupId').value = groupId;
+      document.getElementById('shadeDeleteBtn').style.display = 'none';
+      document.getElementById('shadeModal').classList.add('show');
+    };
+
+    window.openShadeModal = function(shadeId, groupId, shade) {
+      document.getElementById('shadeModalTitle').textContent = '編輯色階';
+      document.getElementById('shadeCode').value = shade.code || '';
+      document.getElementById('shadeName').value = shade.name || '';
+      const hex = shade.hex_color || '#E8D8C4';
+      shadeHex.value = hex;
+      shadeColorPicker.value = hex;
+      shadePreview.style.background = hex;
+      document.getElementById('shadeLabL').value = shade.lab_l || '';
+      document.getElementById('shadeLabA').value = shade.lab_a || '';
+      document.getElementById('shadeLabB').value = shade.lab_b || '';
+      document.getElementById('shadeEditId').value = shadeId;
+      document.getElementById('shadeGroupId').value = groupId;
+      document.getElementById('shadeDeleteBtn').style.display = '';
+      document.getElementById('shadeModal').classList.add('show');
+    };
+
+    document.getElementById('shadeModalSaveBtn').addEventListener('click', async () => {
+      const editId = document.getElementById('shadeEditId').value;
+      const groupId = document.getElementById('shadeGroupId').value;
+      const code = document.getElementById('shadeCode').value.trim();
+      const name = document.getElementById('shadeName').value.trim();
+      const hex_color = shadeHex.value.trim();
+      const lab_l = parseFloat(document.getElementById('shadeLabL').value) || 0;
+      const lab_a = parseFloat(document.getElementById('shadeLabA').value) || 0;
+      const lab_b = parseFloat(document.getElementById('shadeLabB').value) || 0;
+      if (!code) { showToast('請輸入色階代碼', 'error'); return; }
+      try {
+        let res;
+        if (editId) {
+          res = await fetch('/api/admin/shades/' + editId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, name, hex_color, lab_l, lab_a, lab_b })
+          });
+        } else {
+          res = await fetch('/api/admin/shades', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ group_id: parseInt(groupId), code, name, hex_color, lab_l, lab_a, lab_b })
+          });
+        }
+        const data = await res.json();
+        if (data.ok) {
+          showToast(data.msg);
+          document.getElementById('shadeModal').classList.remove('show');
+          loadShades(groupId);
+        } else showToast(data.msg || '操作失敗', 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    document.getElementById('shadeDeleteBtn').addEventListener('click', async () => {
+      const shadeId = document.getElementById('shadeEditId').value;
+      const groupId = document.getElementById('shadeGroupId').value;
+      if (!confirm('確定刪除此色階嗎？')) return;
+      try {
+        const res = await fetch('/api/admin/shades/' + shadeId, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          showToast(data.msg);
+          document.getElementById('shadeModal').classList.remove('show');
+          loadShades(groupId);
+        } else showToast(data.msg || '刪除失敗', 'error');
+      } catch { showToast('無法連線伺服器', 'error'); }
+    });
+
+    // 所有 modal 點擊背景關閉
+    document.querySelectorAll('.admin-modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('show');
+      });
+    });
+
+  })();
+  </script>
+</body>
+</html>
